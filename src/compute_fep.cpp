@@ -300,7 +300,7 @@ void ComputeFEP::change_params()
 {
   int i,j;
 
-  // backup original pair parameters and charges
+  // backup pair parameters and charges
 
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
@@ -320,7 +320,7 @@ void ComputeFEP::change_params()
     }
   }
 
-  // backuo original force, energy, virial array values
+  // backup force, energy, virial array values
 
   backup_accumulators();
 
