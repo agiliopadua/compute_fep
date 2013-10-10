@@ -35,7 +35,6 @@ class ComputeFEP : public Compute {
   ComputeFEP(class LAMMPS *, int, char **);
   ~ComputeFEP();
   void init();
-  void init_list(int, class NeighList *);
   double compute_scalar();
 
  private:
@@ -66,15 +65,12 @@ class ComputeFEP : public Compute {
   Perturb *perturb;
 
   class Pair *pair;
-  class NeighList *list;
 
   void change_params();
   double compute_epair();
   void restore_params();
   void backup_accumulators();
   void restore_accumulators();
-
-  double energy_pair();
 };
 
 }

@@ -27,9 +27,6 @@
 #include "pair.h"
 #include "pair_hybrid.h"
 #include "kspace.h"
-#include "neighbor.h"
-#include "neigh_list.h"
-#include "neigh_request.h"
 #include "timer.h"
 #include "memory.h"
 #include "error.h"
@@ -257,21 +254,6 @@ void ComputeFEP::init()
     }
   }
 
-#ifdef FEP_DEBUG
-  // need an occasional half neighbor list
-  int irequest = neighbor->request((void *) this);
-  neighbor->requests[irequest]->pair = 0;
-  neighbor->requests[irequest]->compute = 1;
-  neighbor->requests[irequest]->occasional = 1;
-#endif
-
-}
-
-/* ---------------------------------------------------------------------- */
-
-void ComputeFEP::init_list(int id, NeighList *ptr)
-{
-  list = ptr;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -280,25 +262,15 @@ double ComputeFEP::compute_scalar()
 {
   double pe0,pe1;
 
-#ifdef FEP_DEBUG
-  neighbor->build_one(list->index);
-  double pe0_test = energy_pair();
-#endif
-
   pe0 = compute_epair();
 
   change_params();
-
-#ifdef FEP_DEBUG
-  double pe1_test = energy_pair();
-#endif
 
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
     timer->stamp(TIME_PAIR);
   }
-
   if (force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
     timer->stamp(TIME_KSPACE);
@@ -309,8 +281,7 @@ double ComputeFEP::compute_scalar()
 
 #ifdef FEP_DEBUG
   if (comm->me == 0 && screen)
-    fprintf(screen, "###FEP pe0 = %e(%e)  pe1 = %e(%e)\n",
-            pe0,pe0_test,pe1,pe1_test);
+    fprintf(screen, "###FEP pe0 = %e  pe1 = %e\n",pe0,pe1);
 #endif
 
   scalar = exp(-(pe1-pe0)/(force->boltz*temp_fep));
@@ -613,73 +584,3 @@ void ComputeFEP::restore_accumulators()
   }
 }
 
-/* ----------------------------------------------------------------------
-   calculate pair energy of configuration using pair->single (test purposes)
-------------------------------------------------------------------------- */
-
-double ComputeFEP::energy_pair()
-{
-  int i,j,ii,jj,inum,jnum,itype,jtype,imol;
-  double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  double fpair,factor_coul,factor_lj;
-  double eng, eng_pair;
-  int *ilist,*jlist,*numneigh,**firstneigh;
-
-  double **x = atom->x;
-  int *type = atom->type;
-  int *mask = atom->mask;
-  pair = force->pair;
-  double **cutsq = force->pair->cutsq;
-  double *special_lj = force->special_lj;
-  double *special_coul = force->special_coul;
-
-  inum = list->inum;
-  ilist = list->ilist;
-  numneigh = list->numneigh;
-  firstneigh = list->firstneigh;
-
-  fpair = 0.0;
-
-  timer->stamp();
-  eng = 0.0;
-  for (ii = 0; ii < inum; ii++) {
-    i = ilist[ii];
-    if (!(mask[i] & groupbit)) continue;
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
-    itype = type[i];
-    jlist = firstneigh[i];
-    jnum = numneigh[i];
-
-    for (jj = 0; jj < jnum; jj++) {
-      j = jlist[jj];
-      factor_lj = special_lj[sbmask(j)];
-      factor_coul = special_coul[sbmask(j)];
-      j &= NEIGHMASK;
-
-      if (factor_lj == 0.0 && factor_coul == 0.0) continue;
-      if (!(mask[j] & groupbit)) continue;
-
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
-      rsq = delx*delx + dely*dely + delz*delz;
-      jtype = type[j];
-
-      if (rsq < cutsq[itype][jtype])
-        eng += pair->single(i,j,itype,jtype,rsq,factor_coul,factor_lj,fpair);
-    }
-  }
-  timer->stamp(TIME_PAIR);
-
-  eng_pair = 0.0;
-  MPI_Allreduce(&eng,&eng_pair,1,MPI_DOUBLE,MPI_SUM,world);
-
-  if (tailflag) {
-    double volume = domain->xprd * domain->yprd * domain->zprd;
-    eng_pair += force->pair->etail / volume; 
-  }
-
-  return eng_pair;
-}
