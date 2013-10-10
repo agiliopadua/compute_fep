@@ -234,26 +234,6 @@ void ComputeFEP::init()
                  "compute tail corrections");
   }
 
-  // make copy of original pair,atom array values
-
-  for (int m = 0; m < npert; m++) {
-    Perturb *pert = &perturb[m];
-    if (pert->which == PAIR) {
-      for (i = pert->ilo; i <= pert->ihi; i++)
-        for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
-          pert->array_orig[i][j] = pert->array[i][j];
-    } else if (pert->which == ATOM) {
-        int *atype = atom->type;
-        double *q = atom->q; 
-        int *mask = atom->mask;
-        int natom = atom->nlocal + atom->nghost;
-        for (i = 0; i < natom; i++)
-          if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
-            if (mask[i] & groupbit)
-              pert->q_orig[i] = q[i];         
-    }
-  }
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -320,7 +300,27 @@ void ComputeFEP::change_params()
 {
   int i,j;
 
-  // make copy of original force, energy, virial array values
+  // backup original pair parameters and charges
+
+  for (int m = 0; m < npert; m++) {
+    Perturb *pert = &perturb[m];
+    if (pert->which == PAIR) {
+      for (i = pert->ilo; i <= pert->ihi; i++)
+        for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
+          pert->array_orig[i][j] = pert->array[i][j];
+    } else if (pert->which == ATOM) {
+        int *atype = atom->type;
+        double *q = atom->q; 
+        int *mask = atom->mask;
+        int natom = atom->nlocal;
+        for (i = 0; i < natom; i++)
+          if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
+            if (mask[i] & groupbit)
+              pert->q_orig[i] = q[i];         
+    }
+  }
+
+  // backuo original force, energy, virial array values
 
   backup_accumulators();
 
@@ -388,10 +388,9 @@ void ComputeFEP::restore_params()
 {
   int i,j;
 
+  // restore pair parameters and charges
+
   for (int m = 0; m < npert; m++) {
-
-    // restore pair parameters
-
     Perturb *pert = &perturb[m];
     if (pert->which == PAIR) {
       for (i = pert->ilo; i <= pert->ihi; i++)
@@ -406,15 +405,11 @@ void ComputeFEP::restore_params()
             fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, pert->array[i][j]);
       }
 #endif
-
     } else if (pert->which == ATOM) {
-
-      // restore charges
-
       int *atype = atom->type;
       double *q = atom->q; 
       int *mask = atom->mask;
-      int natom = atom->nlocal + atom->nghost;
+      int natom = atom->nlocal;
       for (i = 0; i < natom; i++)
         if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
           if (mask[i] & groupbit)
@@ -436,6 +431,10 @@ void ComputeFEP::restore_params()
   // restore force, energy, virial array values
 
   restore_accumulators();
+
+  // re-initialize pair styles if any PAIR settings were changed
+  // this resets other coeffs that may depend on changed values,
+  // and also offset and tail corrections
 
   if (anypair) force->pair->reinit();
 }
