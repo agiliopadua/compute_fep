@@ -1,0 +1,165 @@
+"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+compute fep command :h3
+
+[Syntax:]
+
+compute ID group-ID fep temp attribute args ... keyword value ... :pre
+
+ID, group-ID are documented in "compute"_compute.html command :ulb,l
+fep = name of this compute command :l
+temp = external temperature (as specified for constant-temperature run) :l
+one or more attribute with args may be appended :l
+attribute = {pair} :l
+  {pair} args = pstyle pparam I J delta
+    pstyle = pair style name, e.g. lj/cut
+    pparam = parameter to perturb
+    I,J = type pair(s) to set parameter for
+    delta = perturbation to apply (in the units of the parameter)
+  {atom} args = aparam I delta
+    aparam = parameter to adapt over time
+    I = type to set parameter for
+    delta = perturbation to apply (in the units of the parameter) :pre
+zero or more keyword/value pairs may be appended :l
+keyword = {tail} :l
+  {tail} value = {no} or {yes}
+    {no} = ignore tail correction to pair energies (usually small in fep)
+    {yes} = include tail correction to pair energies :pre
+:ule
+
+[Examples:]
+
+compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma
+1 * 0.001
+compute 1 all fep 300 atom charge 2 0.001 :pre
+
+
+[Description:]
+
+Free-energy perturbation method. Apply a perturbation to one or more
+parameters of the interaction potential and recalculate the pair
+potential energy without changing the atomic coordinates from those of
+the reference, unperturbed system.
+
+This command can be combined with "fix adapt"_fix_adapt.html to
+perform free-energy calculations along gradual alchemical
+transformations during a simulation run. Several strategies are
+available for the setup of an alchemical transformation route, such as
+the single-topology or the double-topology strategies
+"(Pearlman)"_#Pearlman. This compute can also be used to implement the
+finite-difference thermodynamic integration (FDTI) method
+"(Mezei)"_#Mezei. Note that this compute command does not change bond
+lengths or other internal coordinates, although this may not be an
+issue in many applications "(Karplus)"_#Karplus.
+
+:line
+
+The {pair} attribute enables various parameters of potentials defined
+by the "pair_style"_pair_style.html and "pair_coeff"_pair_coeff.html
+commands to be changed, if the pair style supports it.
+
+The {pstyle} argument is the name of the pair style. For example,
+{pstyle} could be specified as "lj/cut".  The {pparam} argument is the
+name of the parameter to change.  This is a (non-exclusive) list of
+pair styles and parameters that can be used with this compute.  See
+the doc pages for individual pair styles and their energy formulas for
+the meaning of these parameters:
+
+"born"_pair_born.html: a,b,c: type pairs:
+"buck"_pair_buck.html: a,c: type pairs:
+"lj/cut"_pair_lj.html: epsilon,sigma: type pairs :tb(c=3,s=:)
+
+IMPORTANT NOTE: It is easy to add new potentials and their parameters
+to this list.  All it typically takes is adding an extract() method to
+the pair_*.cpp file associated with the potential.
+
+Similar to the "pair_coeff"_pair_coeff.html command, I and J can be
+specified in one of two ways.  Explicit numeric values can be used for
+each, as in the 1st example above.  I <= J is required.  LAMMPS sets
+the coefficients for the symmetric J,I interaction to the same
+values. A wild-card asterisk can be used in place of or in conjunction
+with the I,J arguments to set the coefficients for multiple pairs of
+atom types.  This takes the form "*" or "*n" or "n*" or "m*n".  If N =
+the number of atom types, then an asterisk with no numeric values
+means all types from 1 to N.  A leading asterisk means all types from
+1 to n (inclusive).  A trailing asterisk means all types from n to N
+(inclusive).  A middle asterisk means all types from m to n
+(inclusive).  Note that only type pairs with I <= J are considered; if
+asterisks imply type pairs where J < I, they are ignored.
+
+IMPROTANT NOTE: If "pair_style hybrid or
+hybrid/overlay"_pair_hybrid.html is being used, then the {pstyle} will
+be a sub-style name.  You must specify I,J arguments that correspond
+to type pair values defined (via the "pair_coeff"_pair_coeff.html
+command) for that sub-style.
+
+:line
+
+The {atom} attribute enables atom properties to be changed.  The
+{aparam} argument is the name of the parameter to change.  This is the
+current list of atom parameters that can be used with this compute:
+
+charge = charge on particle :ul
+
+:line
+
+The {tail} keyword controls the calculation of the tail correction to
+"van der Waals" pair energies beyond the cutoff, if this has been
+activated via the "pair_modify"_pair_modify.html command. If the
+perturbation is small, the tail contribution to the energy difference
+between the reference and perturbed systems should be negligible.
+
+:line
+
+[Output info:]
+
+This compute calculates a global scalar which is:
+
+exp(-(U_pert - U_0) / kT)
+
+where U_pert is the pair potential energy obtained with the perturbed
+parameters (using the site coordinates of the present configuration of
+the system) and U_0 is the pair potential energy obtained with the
+unperturbed parameters. This result can be used by any command that
+uses a global scalar value from a compute as input.  See
+"Section_howto 15"_Section_howto.html#howto_15 for an overview of
+LAMMPS output options. Namely, the computed scalar value can be
+averaged using "fix ave/time"_fix_ave_time.html to calculate the
+free-energy difference:
+
+-kT ln < exp(-(U_pert - U_0) / kT) >_0
+
+The scalar value calculated by this compute is "extensive".
+
+
+[Restrictions:]
+
+This compute is part of the MISC package.  It is only enabled if LAMMPS
+was built with that package.  See the "Making
+LAMMPS"_Section_start.html#start_3 section for more info.
+
+[Related commands:]
+
+"fix adapt"_fix_adapt.html, "fix ave/time"_fix_ave_time.html
+
+[Default:]
+
+The option defaults are tail = no.
+
+:line
+
+:link(Pearlman)
+[(Pearlman)] Pearlman, J Chem Phys, 98, 1487 (1994)
+
+:link(Mezei)
+[(Mezei)] Mezei, J Chem Phys, 86, 7084 (1987)
+
+:link(Karplus)
+[(Karplus)] Boresch and Karplus, J Phys Chem A, 103, 103 (1999)
+
