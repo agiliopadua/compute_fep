@@ -1,0 +1,186 @@
+<HTML>
+<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>compute fep command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>compute ID group-ID fep temp attribute args ... keyword value ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
+
+<LI>fep = name of this compute command 
+
+<LI>temp = external temperature (as specified for constant-temperature run) 
+
+<LI>one or more attribute with args may be appended 
+
+<LI>attribute = <I>pair</I> 
+
+<PRE>  <I>pair</I> args = pstyle pparam I J delta
+    pstyle = pair style name, e.g. lj/cut
+    pparam = parameter to perturb
+    I,J = type pair(s) to set parameter for
+    delta = perturbation to apply (in the units of the parameter)
+  <I>atom</I> args = aparam I delta
+    aparam = parameter to adapt over time
+    I = type to set parameter for
+    delta = perturbation to apply (in the units of the parameter) 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended 
+
+<LI>keyword = <I>tail</I> 
+
+<PRE>  <I>tail</I> value = <I>no</I> or <I>yes</I>
+    <I>no</I> = ignore tail correction to pair energies (usually small in fep)
+    <I>yes</I> = include tail correction to pair energies 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma 1 * 0.001
+compute 1 all fep 300 atom charge 2 0.001 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Free-energy perturbation method. Apply a perturbation to one or more
+parameters of the interaction potential and recalculate the pair
+potential energy without changing the atomic coordinates from those of
+the reference, unperturbed system.
+</P>
+<P>This command can be combined with <A HREF = "fix_adapt.html">fix adapt</A> to
+perform free-energy calculations along gradual alchemical
+transformations during a simulation run. Several strategies are
+available for the setup of an alchemical transformation route, such as
+the single-topology or the double-topology strategies
+<A HREF = "#Pearlman">(Pearlman)</A>. This compute can also be used to implement the
+finite-difference thermodynamic integration (FDTI) method
+<A HREF = "#Mezei">(Mezei)</A>. Note that this compute command does not change bond
+lengths or other internal coordinates, although this may not be an
+issue in many applications <A HREF = "#Karplus">(Karplus)</A>.
+</P>
+<HR>
+
+<P>The <I>pair</I> attribute enables various parameters of potentials defined
+by the <A HREF = "pair_style.html">pair_style</A> and <A HREF = "pair_coeff.html">pair_coeff</A>
+commands to be changed, if the pair style supports it.
+</P>
+<P>The <I>pstyle</I> argument is the name of the pair style. For example,
+<I>pstyle</I> could be specified as "lj/cut".  The <I>pparam</I> argument is the
+name of the parameter to change.  This is a (non-exclusive) list of
+pair styles and parameters that can be used with this compute.  See
+the doc pages for individual pair styles and their energy formulas for
+the meaning of these parameters:
+</P>
+<DIV ALIGN=center><TABLE  BORDER=1 >
+<TR><TD ><A HREF = "pair_born.html">born</A></TD><TD > a,b,c</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_buck.html">buck</A></TD><TD > a,c</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs 
+</TD></TR></TABLE></DIV>
+
+<P>IMPORTANT NOTE: It is easy to add new potentials and their parameters
+to this list.  All it typically takes is adding an extract() method to
+the pair_*.cpp file associated with the potential.
+</P>
+<P>Similar to the <A HREF = "pair_coeff.html">pair_coeff</A> command, I and J can be
+specified in one of two ways.  Explicit numeric values can be used for
+each, as in the 1st example above.  I <= J is required.  LAMMPS sets
+the coefficients for the symmetric J,I interaction to the same
+values. A wild-card asterisk can be used in place of or in conjunction
+with the I,J arguments to set the coefficients for multiple pairs of
+atom types.  This takes the form "*" or "*n" or "n*" or "m*n".  If N =
+the number of atom types, then an asterisk with no numeric values
+means all types from 1 to N.  A leading asterisk means all types from
+1 to n (inclusive).  A trailing asterisk means all types from n to N
+(inclusive).  A middle asterisk means all types from m to n
+(inclusive).  Note that only type pairs with I <= J are considered; if
+asterisks imply type pairs where J < I, they are ignored.
+</P>
+<P>IMPROTANT NOTE: If <A HREF = "pair_hybrid.html">pair_style hybrid or
+hybrid/overlay</A> is being used, then the <I>pstyle</I> will
+be a sub-style name.  You must specify I,J arguments that correspond
+to type pair values defined (via the <A HREF = "pair_coeff.html">pair_coeff</A>
+command) for that sub-style.
+</P>
+<HR>
+
+<P>The <I>atom</I> attribute enables atom properties to be changed.  The
+<I>aparam</I> argument is the name of the parameter to change.  This is the
+current list of atom parameters that can be used with this compute:
+</P>
+<UL><LI>charge = charge on particle 
+</UL>
+<HR>
+
+<P>The <I>tail</I> keyword controls the calculation of the tail correction to
+"van der Waals" pair energies beyond the cutoff, if this has been
+activated via the <A HREF = "pair_modify.html">pair_modify</A> command. If the
+perturbation is small, the tail contribution to the energy difference
+between the reference and perturbed systems should be negligible.
+</P>
+<HR>
+
+<P><B>Output info:</B>
+</P>
+<P>This compute calculates a global scalar which is:
+</P>
+<P>exp(-(U_1 - U_0) / kT)
+</P>
+<P>and also a global vector of length 2 containing the pair energy
+difference (and also the Boltzmann factor):
+</P>
+<P>U_1 - U_0
+</P>
+<P>where U_1 is the pair potential energy obtained with the perturbed
+parameters (using the site coordinates of the present configuration of
+the system) and U_0 is the pair potential energy obtained with the
+unperturbed parameters.  The Boltzmann factor scalar can be accessed
+as c_ID (or c_ID[2]) and the energy difference as c_ID[1]. These
+results can be used by any command that uses a global scalar or vector
+from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
+15</A> for an overview of LAMMPS output
+options. For example, the computed values can be averaged using <A HREF = "fix_ave_time.html">fix
+ave/time</A> to calculate the free-energy differences:
+</P>
+<P>-kT ln < exp(-(U_1 - U_0) / kT) >_0
+</P>
+<P>The values calculated by this compute are "extensive".
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>This compute is part of the MISC package.  It is only enabled if LAMMPS
+was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
+LAMMPS</A> section for more info.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_adapt.html">fix adapt</A>, <A HREF = "fix_ave_time.html">fix ave/time</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>The option defaults are tail = no.
+</P>
+<HR>
+
+<A NAME = "Pearlman"></A>
+
+<P><B>(Pearlman)</B> Pearlman, J Chem Phys, 98, 1487 (1994)
+</P>
+<A NAME = "Mezei"></A>
+
+<P><B>(Mezei)</B> Mezei, J Chem Phys, 86, 7084 (1987)
+</P>
+<A NAME = "Karplus"></A>
+
+<P><B>(Karplus)</B> Boresch and Karplus, J Phys Chem A, 103, 103 (1999)
+</P>
+</HTML>

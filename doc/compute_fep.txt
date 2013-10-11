@@ -35,8 +35,7 @@ keyword = {tail} :l
 
 [Examples:]
 
-compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma
-1 * 0.001
+compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma 1 * 0.001
 compute 1 all fep 300 atom charge 2 0.001 :pre
 
 
@@ -121,21 +120,27 @@ between the reference and perturbed systems should be negligible.
 
 This compute calculates a global scalar which is:
 
-exp(-(U_pert - U_0) / kT)
+exp(-(U_1 - U_0) / kT)
 
-where U_pert is the pair potential energy obtained with the perturbed
+and also a global vector of length 2 containing the pair energy
+difference (and also the Boltzmann factor):
+
+U_1 - U_0
+
+where U_1 is the pair potential energy obtained with the perturbed
 parameters (using the site coordinates of the present configuration of
 the system) and U_0 is the pair potential energy obtained with the
-unperturbed parameters. This result can be used by any command that
-uses a global scalar value from a compute as input.  See
-"Section_howto 15"_Section_howto.html#howto_15 for an overview of
-LAMMPS output options. Namely, the computed scalar value can be
-averaged using "fix ave/time"_fix_ave_time.html to calculate the
-free-energy difference:
+unperturbed parameters.  The Boltzmann factor scalar can be accessed
+as c_ID (or c_ID\[2\]) and the energy difference as c_ID\[1\]. These
+results can be used by any command that uses a global scalar or vector
+from a compute as input.  See "Section_howto
+15"_Section_howto.html#howto_15 for an overview of LAMMPS output
+options. For example, the computed values can be averaged using "fix
+ave/time"_fix_ave_time.html to calculate the free-energy differences:
 
--kT ln < exp(-(U_pert - U_0) / kT) >_0
+-kT ln < exp(-(U_1 - U_0) / kT) >_0
 
-The scalar value calculated by this compute is "extensive".
+The values calculated by this compute are "extensive".
 
 
 [Restrictions:]
