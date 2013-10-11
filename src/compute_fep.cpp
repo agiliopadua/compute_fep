@@ -46,10 +46,11 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 5) error->all(FLERR,"Illegal number of arguments in compute fep");
 
-  scalar_flag = 1;
+  //  scalar_flag = 1;
+  scalar_flag = 0;
   vector_flag = 1;
   size_vector = 2;
-  extscalar = 0;
+  // extscalar = 0;
   extvector = 0;
 
   vector = new double[2];
@@ -229,7 +230,7 @@ void ComputeFEP::init()
 
   if (comm->me == 0) {
     if (screen) {
-      fprintf(screen, "FEP settings...\n");
+      fprintf(screen, "FEP settings ...\n");
       fprintf(screen, "  temperature = %f\n", temp_fep);
       fprintf(screen, "  tail %s\n", (tailflag ? "yes":"no"));
       for (int m = 0; m < npert; m++) {
@@ -241,7 +242,7 @@ void ComputeFEP::init()
           fprintf(screen, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
       }
     } else if (logfile) {
-      fprintf(logfile, "FEP settings...");
+      fprintf(logfile, "FEP settings ...");
       fprintf(logfile, "  temperature = %f\n", temp_fep);
       fprintf(logfile, "  tail %s\n", (tailflag ? "yes":"no"));
       for (int m = 0; m < npert; m++) {
@@ -259,14 +260,22 @@ void ComputeFEP::init()
 
 /* ---------------------------------------------------------------------- */
 
+/*
 double ComputeFEP::compute_scalar()
 {
   double pe0,pe1;
 
   invoked_scalar = update->ntimestep;
-  if (update->eflag_global != invoked_scalar)
-    error->all(FLERR,"Energy was not tallied on needed timestep for compute fep");
 
+  timer->stamp();
+  if (force->pair && force->pair->compute_flag) {
+    force->pair->compute(1,0);
+    timer->stamp(TIME_PAIR);
+  }
+  if (force->kspace && force->kspace->compute_flag) {
+    force->kspace->compute(1,0);
+    timer->stamp(TIME_KSPACE);
+  }
   pe0 = compute_epair();
 
   change_params();
@@ -284,14 +293,17 @@ double ComputeFEP::compute_scalar()
 
   restore_params();
 
+  scalar = exp(-(pe1-pe0)/(force->boltz*temp_fep));
+
 #ifdef FEP_DEBUG
   if (comm->me == 0 && screen)
-    fprintf(screen, "FEP  pe0 = %f  pe1 = %f\n",pe0,pe1);
+    fprintf(screen, "FEP u0 = %f  u1 = %f  u1-u0 = %f  exp = %f\n",
+            pe0,pe1,pe1-pe0,scalar);
 #endif
 
-  scalar = exp(-(pe1-pe0)/(force->boltz*temp_fep));
   return scalar;
 }
+*/
 
 /* ---------------------------------------------------------------------- */
 
@@ -300,9 +312,16 @@ void ComputeFEP::compute_vector()
   double pe0,pe1;
 
   invoked_vector = update->ntimestep;
-  if (update->eflag_global != invoked_vector)
-    error->all(FLERR,"Energy was not tallied on needed timestep for compute fep");
 
+  timer->stamp();
+  if (force->pair && force->pair->compute_flag) {
+    force->pair->compute(1,0);
+    timer->stamp(TIME_PAIR);
+  }
+  if (force->kspace && force->kspace->compute_flag) {
+    force->kspace->compute(1,0);
+    timer->stamp(TIME_KSPACE);
+  }
   pe0 = compute_epair();
 
   change_params();
@@ -320,11 +339,14 @@ void ComputeFEP::compute_vector()
 
   restore_params();
 
-  if (comm->me == 0 && screen)
-    fprintf(screen, "FEP pe0 = %e  pe1 = %e\n",pe0,pe1);
-
   vector[0] = pe1-pe0;
   vector[1] = exp(-(pe1-pe0)/(force->boltz*temp_fep));
+
+#ifdef FEP_DEBUG
+  if (comm->me == 0 && screen)
+    fprintf(screen, "FEP U0 = %f  U1 = %f  DU = %f  exp(-DU/kT) = %f\n",
+            pe0,pe1,vector[0],vector[1]);
+#endif
 }
 
 /* ----------------------------------------------------------------------

@@ -35,7 +35,7 @@ class ComputeFEP : public Compute {
   ComputeFEP(class LAMMPS *, int, char **);
   ~ComputeFEP();
   void init();
-  double compute_scalar();
+  //  double compute_scalar();
   void compute_vector();
 
  private:
