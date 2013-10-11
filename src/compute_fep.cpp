@@ -37,7 +37,7 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#define FEP_DEBUG
+#undef FEP_DEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -47,6 +47,12 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
   if (narg < 5) error->all(FLERR,"Illegal number of arguments in compute fep");
 
   scalar_flag = 1;
+  vector_flag = 1;
+  size_vector = 2;
+  extscalar = 0;
+  extvector = 0;
+
+  vector = new double[2];
 
   temp_fep = force->numeric(FLERR,arg[3]);
 
@@ -117,21 +123,6 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
     } else error->all(FLERR,"Illegal optional keyword in compute fep");
   }
 
-#ifdef FEP_DEBUG
-  if (comm->me == 0 && screen) {
-    fprintf(screen, "###FEP temperature = %7.2f K\n", temp_fep);
-    fprintf(screen, "###FEP tail %s\n", (tailflag ? "yes":"no"));
-    for (int m = 0; m < npert; m++) {
-      Perturb *pert = &perturb[m];
-      if (pert->which == PAIR)
-        fprintf(screen, "###FEP %s %s %d-%d %d-%d %f\n", pert->pstyle, pert->pparam,
-                pert->ilo, pert->ihi, pert->jlo, pert->jhi, pert->delta);
-      else if (pert->which == ATOM)
-        fprintf(screen, "###FEP %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
-    }
-  }
-#endif
-
   // allocate pair style arrays
 
   int ntype = atom->ntypes;
@@ -161,6 +152,8 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
 ComputeFEP::~ComputeFEP()
 {
+  delete [] vector;
+
   for (int m = 0; m < npert; m++) {
     if (perturb[m].which == PAIR) {
       delete [] perturb[m].pstyle;
@@ -234,6 +227,34 @@ void ComputeFEP::init()
                  "compute tail corrections");
   }
 
+  if (comm->me == 0) {
+    if (screen) {
+      fprintf(screen, "FEP settings...\n");
+      fprintf(screen, "  temperature = %f\n", temp_fep);
+      fprintf(screen, "  tail %s\n", (tailflag ? "yes":"no"));
+      for (int m = 0; m < npert; m++) {
+        Perturb *pert = &perturb[m];
+        if (pert->which == PAIR)
+          fprintf(screen, "  %s %s %d-%d %d-%d %f\n", pert->pstyle, pert->pparam,
+                  pert->ilo, pert->ihi, pert->jlo, pert->jhi, pert->delta);
+        else if (pert->which == ATOM)
+          fprintf(screen, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
+      }
+    } else if (logfile) {
+      fprintf(logfile, "FEP settings...");
+      fprintf(logfile, "  temperature = %f\n", temp_fep);
+      fprintf(logfile, "  tail %s\n", (tailflag ? "yes":"no"));
+      for (int m = 0; m < npert; m++) {
+        Perturb *pert = &perturb[m];
+        if (pert->which == PAIR)
+          fprintf(logfile, "  %s %s %d-%d %d-%d %f\n", pert->pstyle, pert->pparam,
+                  pert->ilo, pert->ihi, pert->jlo, pert->jhi, pert->delta);
+        else if (pert->which == ATOM)
+          fprintf(logfile, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
+      }
+    }
+  }
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -241,6 +262,10 @@ void ComputeFEP::init()
 double ComputeFEP::compute_scalar()
 {
   double pe0,pe1;
+
+  invoked_scalar = update->ntimestep;
+  if (update->eflag_global != invoked_scalar)
+    error->all(FLERR,"Energy was not tallied on needed timestep for compute fep");
 
   pe0 = compute_epair();
 
@@ -261,13 +286,46 @@ double ComputeFEP::compute_scalar()
 
 #ifdef FEP_DEBUG
   if (comm->me == 0 && screen)
-    fprintf(screen, "###FEP pe0 = %e  pe1 = %e\n",pe0,pe1);
+    fprintf(screen, "FEP  pe0 = %f  pe1 = %f\n",pe0,pe1);
 #endif
 
   scalar = exp(-(pe1-pe0)/(force->boltz*temp_fep));
   return scalar;
 }
 
+/* ---------------------------------------------------------------------- */
+
+void ComputeFEP::compute_vector()
+{
+  double pe0,pe1;
+
+  invoked_vector = update->ntimestep;
+  if (update->eflag_global != invoked_vector)
+    error->all(FLERR,"Energy was not tallied on needed timestep for compute fep");
+
+  pe0 = compute_epair();
+
+  change_params();
+
+  timer->stamp();
+  if (force->pair && force->pair->compute_flag) {
+    force->pair->compute(1,0);
+    timer->stamp(TIME_PAIR);
+  }
+  if (force->kspace && force->kspace->compute_flag) {
+    force->kspace->compute(1,0);
+    timer->stamp(TIME_KSPACE);
+  }
+  pe1 = compute_epair();
+
+  restore_params();
+
+  if (comm->me == 0 && screen)
+    fprintf(screen, "FEP pe0 = %e  pe1 = %e\n",pe0,pe1);
+
+  vector[0] = pe1-pe0;
+  vector[1] = exp(-(pe1-pe0)/(force->boltz*temp_fep));
+}
 
 /* ----------------------------------------------------------------------
    obtain pair energy from lammps accumulators

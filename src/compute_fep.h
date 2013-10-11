@@ -36,6 +36,7 @@ class ComputeFEP : public Compute {
   ~ComputeFEP();
   void init();
   double compute_scalar();
+  void compute_vector();
 
  private:
   int npert;
