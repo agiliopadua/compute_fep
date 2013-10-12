@@ -30,8 +30,6 @@ namespace LAMMPS_NS {
 
 class ComputeFEP : public Compute {
  public:
-  int chgflag; 
-
   ComputeFEP(class LAMMPS *, int, char **);
   ~ComputeFEP();
   void init();
@@ -41,7 +39,7 @@ class ComputeFEP : public Compute {
  private:
   int npert;
   int anypair;
-  int tailflag;
+  int tailflag, volumeflag;
   double temp_fep;
 
   double **f_orig;

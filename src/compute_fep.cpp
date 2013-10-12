@@ -112,7 +112,7 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
   // optional keywords
 
-  tailflag = 0;
+  tailflag = volumeflag = 0;
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"tail") == 0) {
@@ -121,7 +121,14 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
       else if (strcmp(arg[iarg+1],"yes") == 0) tailflag = 1;
       else error->all(FLERR,"Illegal optional keyword in compute fep");
       iarg += 2;
-    } else error->all(FLERR,"Illegal optional keyword in compute fep");
+    } else if (strcmp(arg[iarg],"volume") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal optional keyword in compute fep");
+      if (strcmp(arg[iarg+1],"no") == 0) volumeflag = 0;
+      else if (strcmp(arg[iarg+1],"yes") == 0) volumeflag = 1;
+      else error->all(FLERR,"Illegal optional keyword in compute fep");
+      iarg += 2;
+    } else 
+      error->all(FLERR,"Illegal optional keyword in compute fep");
   }
 
   // allocate pair style arrays
@@ -341,6 +348,9 @@ void ComputeFEP::compute_vector()
 
   vector[0] = pe1-pe0;
   vector[1] = exp(-(pe1-pe0)/(force->boltz*temp_fep));
+  vector[2] = domain->xprd * domain->yprd * domain->zprd;
+  if (volumeflag)
+    vector[1] *= vector[2];
 
 #ifdef FEP_DEBUG
   if (comm->me == 0 && screen)
