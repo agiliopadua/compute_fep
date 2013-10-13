@@ -38,6 +38,7 @@ enum{PAIR,ATOM};
 enum{CHARGE};
 
 #undef FEP_DEBUG
+#undef FEP_MAXDEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -424,7 +425,7 @@ void ComputeFEP::change_params()
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array[i][j] = pert->array_orig[i][j] + pert->delta;
       
-#ifdef FEP_DEBUG
+#ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
         fprintf(screen, "###FEP change %s %s\n", pert->pstyle, pert->pparam);
         fprintf(screen, "###FEP  I  J   old_param new_param\n");
@@ -447,7 +448,7 @@ void ComputeFEP::change_params()
             if (mask[i] & groupbit)
               q[i] += pert->delta; 
 
-#ifdef FEP_DEBUG
+#ifdef FEP_MAXDEBUG
         if (comm->me == 0 && screen) {
           fprintf(screen, "###FEP change charge\n");
           fprintf(screen, "###FEP  atom  I   old_q     new_q\n");
@@ -486,7 +487,7 @@ void ComputeFEP::restore_params()
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array[i][j] = pert->array_orig[i][j];
-#ifdef FEP_DEBUG
+#ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
         fprintf(screen, "###FEP restore %s %s\n", pert->pstyle, pert->pparam);
         fprintf(screen, "###FEP  I  J   param\n");
@@ -505,7 +506,7 @@ void ComputeFEP::restore_params()
           if (mask[i] & groupbit)
             q[i] = pert->q_orig[i]; 
       
-#ifdef FEP_DEBUG
+#ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
         fprintf(screen, "###FEP restore charge\n");
         fprintf(screen, "###FEP  atom  I   q\n");
