@@ -264,7 +264,7 @@ void FixAdapt::setup_pre_force(int vflag)
 void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
-  if (update->ntimestep % nevery) return;
+  if ((update->ntimestep-1) % nevery) return;
   change_settings();
 }
 
