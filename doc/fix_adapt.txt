@@ -26,6 +26,7 @@ attribute = {pair} or {kspace} or {atom} :l
     v_name = variable with name that calculates scale factor on K-space terms
   {atom} args = aparam v_name
     aparam = parameter to adapt over time
+    I = type(s) to set parameter for
     v_name = variable with name that calculates value of aparam :pre
 zero or more keyword/value pairs may be appended :l
 keyword = {scale} or {reset} :l
@@ -42,7 +43,7 @@ keyword = {scale} or {reset} :l
 fix 1 all adapt 1 pair soft a 1 1 v_prefactor
 fix 1 all adapt 1 pair soft a 2* 3 v_prefactor
 fix 1 all adapt 1 pair lj/cut epsilon * * v_scale1 coul/cut scale 3 3 v_scale2 scale yes reset yes
-fix 1 all adapt 10 atom diameter v_size :pre
+fix 1 all adapt 10 atom diameter 1 v_size :pre
 
 [Description:]
 
@@ -193,6 +194,10 @@ current list of atom parameters that can be varied by this fix:
 charge = charge on particle
 diameter = diameter of particle :ul
 
+The {I} argument indicates which atom types are affected. A wild-card
+asterisk can be used in place of or in conjunction with the I argument
+to set the coefficients for multiple atom types.
+
 The {v_name} argument of the {atom} keyword is the name of an
 "equal-style variable"_variable.html which will be evaluated each time
 this fix is invoked to set the parameter to a new value.  It should be
@@ -212,7 +217,7 @@ particles in the "center" group from 1.0 to 0.1 in a linear fashion
 over the course of a 1000-step simulation:
 
 variable size equal ramp(1.0,0.1)
-fix 1 center adapt 10 atom diameter v_size :pre
+fix 1 center adapt 10 atom diameter * v_size :pre
 
 :line
 

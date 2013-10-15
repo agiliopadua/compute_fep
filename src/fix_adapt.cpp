@@ -58,9 +58,9 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       nadapt++;
       iarg += 2;
     } else if (strcmp(arg[iarg],"atom") == 0) {
-      if (iarg+3 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+4 > narg) error->all(FLERR,"Illegal fix adapt command");
       nadapt++;
-      iarg += 3;
+      iarg += 4;
     } else break;
   }
 
@@ -115,13 +115,15 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         adapt[nadapt].aparam = CHARGE; 
         chgflag = 1; 
       } else error->all(FLERR,"Illegal fix adapt command");
-      if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) {
-        int n = strlen(&arg[iarg+2][2]) + 1;
+      force->bounds(arg[iarg+2],atom->ntypes,
+                    adapt[nadapt].ilo,adapt[nadapt].ihi);
+      if (strstr(arg[iarg+3],"v_") == arg[iarg+3]) {
+        int n = strlen(&arg[iarg+3][2]) + 1;
         adapt[nadapt].var = new char[n];
-        strcpy(adapt[nadapt].var,&arg[iarg+2][2]);
+        strcpy(adapt[nadapt].var,&arg[iarg+3][2]);
       } else error->all(FLERR,"Illegal fix adapt command");
       nadapt++;
-      iarg += 3;
+      iarg += 4;
     } else break;
   }
 
@@ -152,6 +154,12 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   for (int m = 0; m < nadapt; m++)
     if (adapt[m].which == PAIR)
       memory->create(adapt[m].array_orig,n+1,n+1,"adapt:array_orig");
+  if (diamflag) {
+    radius_orig = new double[n+1];
+    rmass_orig = new double[n+1];
+  }
+  if (chgflag)
+    q_orig = new double[n+1];
 }
 
 /* ---------------------------------------------------------------------- */
@@ -167,6 +175,12 @@ FixAdapt::~FixAdapt()
     }
   }
   delete [] adapt;
+  if (diamflag) {
+    delete [] radius_orig;
+    delete [] rmass_orig;
+  } 
+  if (chgflag)
+    delete [] q_orig;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -234,8 +248,8 @@ void FixAdapt::init()
           error->all(FLERR,"Fix adapt requires atom attribute diameter");
       }
       if (ad->aparam == CHARGE) {
-	if (!atom->q_flag)
-	  error->all(FLERR,"Fix adapt requires atom attribute charge");
+        if (!atom->q_flag)
+          error->all(FLERR,"Fix adapt requires atom attribute charge");
       }
     }
   }
@@ -249,6 +263,21 @@ void FixAdapt::init()
         for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
           ad->array_orig[i][j] = ad->array[i][j];
     }
+  }
+  if (diamflag) {
+    double *radius = atom->radius; 
+    double *rmass = atom->rmass; 
+    int natom = atom->nlocal;
+    for (i = 0; i < natom; i++) {
+      radius_orig[i] = radius[i];
+      rmass_orig[i] = rmass[i];
+    }
+    if (chgflag) {
+      double *q = atom->q; 
+      int natom = atom->nlocal;
+      for (i = 0; i < natom; i++)
+        q_orig[i] = q[i];
+    }         
   }
 }
 
@@ -264,7 +293,8 @@ void FixAdapt::setup_pre_force(int vflag)
 void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
-  if (update->ntimestep % nevery) return;
+  if (update->ntimestep && (update->ntimestep == 1 || (update->ntimestep-1) % nevery))
+      return;
   change_settings();
 }
 
@@ -344,10 +374,10 @@ void FixAdapt::change_settings()
         }
       } else if (ad->aparam == CHARGE) {
         double *q = atom->q; 
-	int *mask = atom->mask;
-	int nlocal = atom->nlocal;
-	for (i = 0; i < nlocal; i++)
-	  if (mask[i] & groupbit) q[i] = value; 
+        int *mask = atom->mask;
+        int nlocal = atom->nlocal;
+        for (i = 0; i < nlocal; i++)
+          if (mask[i] & groupbit) q[i] = value; 
       }
     }
   }
@@ -376,12 +406,23 @@ void FixAdapt::restore_settings()
           for (int j = MAX(ad->jlo,i); j <= ad->jhi; j++)
             ad->array[i][j] = ad->array_orig[i][j];
       }
-
     } else if (ad->which == KSPACE) {
       *kspace_scale = 1.0;
-
-    } else if (ad->which == ATOM) {
-
+    }
+    if (diamflag) {
+      double *radius = atom->radius; 
+      double *rmass = atom->rmass; 
+      int natom = atom->nlocal;
+      for (int i = 0; i < natom; i++) {
+        radius[i] = radius_orig[i];
+        rmass[i] = rmass_orig[i];
+      }         
+    }
+    if (chgflag) {
+      double *q = atom->q; 
+      int natom = atom->nlocal;
+      for (int i = 0; i < natom; i++)
+        q[i] = q_orig[i];
     }
   }
 
