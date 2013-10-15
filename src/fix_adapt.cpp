@@ -154,12 +154,6 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   for (int m = 0; m < nadapt; m++)
     if (adapt[m].which == PAIR)
       memory->create(adapt[m].array_orig,n+1,n+1,"adapt:array_orig");
-  if (diamflag) {
-    radius_orig = new double[n+1];
-    rmass_orig = new double[n+1];
-  }
-  if (chgflag)
-    q_orig = new double[n+1];
 }
 
 /* ---------------------------------------------------------------------- */
@@ -175,12 +169,6 @@ FixAdapt::~FixAdapt()
     }
   }
   delete [] adapt;
-  if (diamflag) {
-    delete [] radius_orig;
-    delete [] rmass_orig;
-  } 
-  if (chgflag)
-    delete [] q_orig;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -264,21 +252,7 @@ void FixAdapt::init()
           ad->array_orig[i][j] = ad->array[i][j];
     }
   }
-  if (diamflag) {
-    double *radius = atom->radius; 
-    double *rmass = atom->rmass; 
-    int natom = atom->nlocal;
-    for (i = 0; i < natom; i++) {
-      radius_orig[i] = radius[i];
-      rmass_orig[i] = rmass[i];
-    }
-    if (chgflag) {
-      double *q = atom->q; 
-      int natom = atom->nlocal;
-      for (i = 0; i < natom; i++)
-        q_orig[i] = q[i];
-    }         
-  }
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -293,7 +267,8 @@ void FixAdapt::setup_pre_force(int vflag)
 void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
-  if (update->ntimestep && (update->ntimestep == 1 || (update->ntimestep-1) % nevery))
+  //  if (update->ntimestep && (update->ntimestep == 1 || (update->ntimestep-1) % nevery))
+  if (update->ntimestep % nevery)
       return;
   change_settings();
 }
@@ -379,7 +354,7 @@ void FixAdapt::change_settings()
         int *atype = atom->type;
         double *q = atom->q; 
         int *mask = atom->mask;
-        int nlocal = atom->nlocal + atom->nghost;
+        int nlocal = atom->nlocal;
         for (i = 0; i < nlocal; i++)
           if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
             if (mask[i] & groupbit) q[i] = value; 
@@ -411,23 +386,12 @@ void FixAdapt::restore_settings()
           for (int j = MAX(ad->jlo,i); j <= ad->jhi; j++)
             ad->array[i][j] = ad->array_orig[i][j];
       }
+
     } else if (ad->which == KSPACE) {
       *kspace_scale = 1.0;
-    }
-    if (diamflag) {
-      double *radius = atom->radius; 
-      double *rmass = atom->rmass; 
-      int natom = atom->nlocal;
-      for (int i = 0; i < natom; i++) {
-        radius[i] = radius_orig[i];
-        rmass[i] = rmass_orig[i];
-      }         
-    }
-    if (chgflag) {
-      double *q = atom->q; 
-      int natom = atom->nlocal;
-      for (int i = 0; i < natom; i++)
-            q[i] = q_orig[i];
+
+    } else if (ad->which == ATOM) {
+
     }
   }
 

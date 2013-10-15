@@ -40,7 +40,6 @@ class FixAdapt : public Fix {
  private:
   int nadapt,resetflag,scaleflag;
   int anypair;
-  double *radius_orig, *rmass_orig, *q_orig;
 
   struct Adapt {
     int which,ivar;
