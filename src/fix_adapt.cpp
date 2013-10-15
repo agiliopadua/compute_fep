@@ -353,6 +353,7 @@ void FixAdapt::change_settings()
         if (atom->rmass_flag) mflag = 1;
         double density;
 
+        int *atype = atom->type;
         double *radius = atom->radius;
         double *rmass = atom->rmass;
         int *mask = atom->mask;
@@ -360,24 +361,28 @@ void FixAdapt::change_settings()
 
         if (mflag == 0) {
           for (i = 0; i < nlocal; i++)
-            if (mask[i] & groupbit)
-              radius[i] = 0.5*value;
+            if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
+              if (mask[i] & groupbit)
+                radius[i] = 0.5*value;
         } else {
           for (i = 0; i < nlocal; i++)
-            if (mask[i] & groupbit) {
-              density = rmass[i] / (4.0*MY_PI/3.0 *
-                                    radius[i]*radius[i]*radius[i]);
-              radius[i] = 0.5*value;
-              rmass[i] = 4.0*MY_PI/3.0 *
-                radius[i]*radius[i]*radius[i] * density;
-            }
+            if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
+              if (mask[i] & groupbit) {
+                density = rmass[i] / (4.0*MY_PI/3.0 *
+                                      radius[i]*radius[i]*radius[i]);
+                radius[i] = 0.5*value;
+                rmass[i] = 4.0*MY_PI/3.0 *
+                  radius[i]*radius[i]*radius[i] * density;
+              }
         }
       } else if (ad->aparam == CHARGE) {
+        int *atype = atom->type;
         double *q = atom->q; 
         int *mask = atom->mask;
-        int nlocal = atom->nlocal;
+        int nlocal = atom->nlocal + atom->nghost;
         for (i = 0; i < nlocal; i++)
-          if (mask[i] & groupbit) q[i] = value; 
+          if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
+            if (mask[i] & groupbit) q[i] = value; 
       }
     }
   }
@@ -422,7 +427,7 @@ void FixAdapt::restore_settings()
       double *q = atom->q; 
       int natom = atom->nlocal;
       for (int i = 0; i < natom; i++)
-        q[i] = q_orig[i];
+            q[i] = q_orig[i];
     }
   }
 
