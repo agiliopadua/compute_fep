@@ -234,8 +234,8 @@ void FixAdapt::init()
           error->all(FLERR,"Fix adapt requires atom attribute diameter");
       }
       if (ad->aparam == CHARGE) {
-        if (!atom->q_flag)
-          error->all(FLERR,"Fix adapt requires atom attribute charge");
+	if (!atom->q_flag)
+	  error->all(FLERR,"Fix adapt requires atom attribute charge");
       }
     }
   }
@@ -264,7 +264,7 @@ void FixAdapt::setup_pre_force(int vflag)
 void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
-  if ((update->ntimestep-1) % nevery) return;
+  if (update->ntimestep % nevery) return;
   change_settings();
 }
 
@@ -344,10 +344,10 @@ void FixAdapt::change_settings()
         }
       } else if (ad->aparam == CHARGE) {
         double *q = atom->q; 
-        int *mask = atom->mask;
-        int nlocal = atom->nlocal;
-        for (i = 0; i < nlocal; i++)
-          if (mask[i] & groupbit) q[i] = value; 
+	int *mask = atom->mask;
+	int nlocal = atom->nlocal;
+	for (i = 0; i < nlocal; i++)
+	  if (mask[i] & groupbit) q[i] = value; 
       }
     }
   }
