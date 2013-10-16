@@ -39,7 +39,9 @@ class ComputeFEP : public Compute {
  private:
   int npert;
   int anypair;
+  int chgflag;
   int tailflag, volumeflag;
+  int fepinitflag;
   double temp_fep;
 
   double **f_orig;
@@ -50,13 +52,15 @@ class ComputeFEP : public Compute {
   double kvirial_orig[6];
   double *keatom_orig,**kvatom_orig;
 
+  int nmax;
+  double *q_orig;
+
   struct Perturb {
     int which;
     char *pstyle,*pparam;
     int ilo,ihi,jlo,jhi;
     int pdim;
     double delta;
-    double *q_orig;
     double **array,**array_orig;
     int aparam;
   };

@@ -56,6 +56,8 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
   vector = new double[2];
 
+  fepinitflag = 0;    // avoid init to run entirely when called by write_data
+
   temp_fep = force->numeric(FLERR,arg[3]);
 
   // count # of perturbations
@@ -80,6 +82,7 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
   // parse keywords
 
   npert = 0;
+  chgflag = 0;
 
   iarg = 4;
   while (iarg < narg) {
@@ -101,10 +104,11 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"atom") == 0) {
       perturb[npert].which = ATOM;
       if (strcmp(arg[iarg+1],"charge") == 0) {
-        perturb[npert].aparam = CHARGE; 
-        force->bounds(arg[iarg+2],atom->ntypes,
-                      perturb[npert].ilo,perturb[npert].ihi);
+        perturb[npert].aparam = CHARGE;
+        chgflag = 1;
       } else error->all(FLERR,"Illegal atom argument in compute fep");
+      force->bounds(arg[iarg+2],atom->ntypes,
+                    perturb[npert].ilo,perturb[npert].ihi);
       perturb[npert].delta = force->numeric(FLERR,arg[iarg+3]);
       npert++;
       iarg += 4;
@@ -135,24 +139,24 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
   // allocate pair style arrays
 
   int ntype = atom->ntypes;
-  int natom = atom->nlocal + atom->nghost;
   for (int m = 0; m < npert; m++) {
     if (perturb[m].which == PAIR)
       memory->create(perturb[m].array_orig,ntype+1,ntype+1,"fep:array_orig");
-    else if (perturb[m].which == ATOM) {
-      memory->create(perturb[m].q_orig,natom+1,"fep:q_orig");
-    }
   }
+
+  nmax = atom->nmax;
+  if (chgflag)
+    memory->create(q_orig,nmax,"fep:q_orig");
 
   // allocate arrays for force, energy, virial backups
 
-  natom = atom->natoms;
-  memory->create(f_orig,natom+1,3,"fep:f_orig");
-  memory->create(peatom_orig,natom+1,"fep:peatom_orig");
-  memory->create(pvatom_orig,natom+1,6,"fep:pvatom_orig");
+  int natom = atom->natoms;
+  memory->create(f_orig,natom,3,"fep:f_orig");
+  memory->create(peatom_orig,natom,"fep:peatom_orig");
+  memory->create(pvatom_orig,natom,6,"fep:pvatom_orig");
   if (force->kspace) {
-    memory->create(keatom_orig,natom+1,"fep:keatom_orig");
-    memory->create(kvatom_orig,natom+1,6,"fep:kvatom_orig");
+    memory->create(keatom_orig,natom,"fep:keatom_orig");
+    memory->create(kvatom_orig,natom,6,"fep:kvatom_orig");
   }
 
 }
@@ -168,10 +172,12 @@ ComputeFEP::~ComputeFEP()
       delete [] perturb[m].pstyle;
       delete [] perturb[m].pparam;
       memory->destroy(perturb[m].array_orig);
-    } else if (perturb[m].which == ATOM)
-       memory->destroy(perturb[m].q_orig);
+    }
   }
   delete [] perturb;
+
+  if (chgflag)
+    memory->destroy(q_orig);
 
   memory->destroy(f_orig);
   memory->destroy(peatom_orig);
@@ -187,6 +193,10 @@ ComputeFEP::~ComputeFEP()
 void ComputeFEP::init()
 {
   int i,j;
+
+  if (!fepinitflag)    // avoid init to run entirely when called by write_data
+      fepinitflag = 1;
+  else return;
 
   // setup and error checks
 
@@ -391,6 +401,14 @@ void ComputeFEP::change_params()
 {
   int i,j;
 
+  // reallocate working arrays if necessary
+
+  if (chgflag && atom->nmax > nmax) {
+    memory->destroy(q_orig);
+    nmax = atom->nmax;
+    memory->create(q_orig,nmax,"fep:q_orig");
+  }
+
   // backup pair parameters and charges
 
   for (int m = 0; m < npert; m++) {
@@ -399,17 +417,14 @@ void ComputeFEP::change_params()
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array_orig[i][j] = pert->array[i][j];
-    } else if (pert->which == ATOM) {
-        int *atype = atom->type;
-        double *q = atom->q; 
-        int *mask = atom->mask;
-        int natom = atom->nlocal;
-        for (i = 0; i < natom; i++)
-          if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
-            if (mask[i] & groupbit)
-              pert->q_orig[i] = q[i];         
     }
   }
+  if (chgflag) {
+    double *q = atom->q; 
+    int natom = atom->nlocal + atom->nghost;
+    for (i = 0; i < natom; i++)
+      q_orig[i] = q[i];
+  }         
 
   // backup force, energy, virial array values
 
@@ -456,7 +471,7 @@ void ComputeFEP::change_params()
             if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
               if (mask[i] & groupbit)
                 fprintf(screen, "###FEP %5d %2d %9.5f %9.5f\n", i, atype[i],
-                        pert->q_orig[i], q[i]);
+                        q_orig[i], q[i]);
         }
 #endif
       }
@@ -496,26 +511,29 @@ void ComputeFEP::restore_params()
             fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, pert->array[i][j]);
       }
 #endif
-    } else if (pert->which == ATOM) {
+    }
+
+#ifdef FEP_MAXDEBUG
+    if (pert->which == ATOM) {
       int *atype = atom->type;
       double *q = atom->q; 
       int *mask = atom->mask;
       int natom = atom->nlocal;
-      for (i = 0; i < natom; i++)
-        if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
-          if (mask[i] & groupbit)
-            q[i] = pert->q_orig[i]; 
-      
-#ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
         fprintf(screen, "###FEP restore charge\n");
         fprintf(screen, "###FEP  atom  I   q\n");
-        for (i = 0; i < atom->nlocal; i++)
+        for (i = 0; i < natom; i++)
           if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
             if (mask[i] & groupbit)
               fprintf(screen, "###FEP %5d %2d %9.5f\n", i, atype[i], q[i]);
       }
 #endif
+
+    if (chgflag) {
+      double *q = atom->q; 
+      int natom = atom->nlocal + atom->nghost;
+      for (int i = 0; i < natom; i++)
+        q[i] = q_orig[i];
     }
   }
 
