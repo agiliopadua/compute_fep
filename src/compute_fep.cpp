@@ -474,8 +474,8 @@ void ComputeFEP::change_params()
                         q_orig[i], q[i]);
         }
 #endif
-      }
 
+      }
     }
   }
 
@@ -502,6 +502,7 @@ void ComputeFEP::restore_params()
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array[i][j] = pert->array_orig[i][j];
+
 #ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
         fprintf(screen, "###FEP restore %s %s\n", pert->pstyle, pert->pparam);
@@ -511,9 +512,20 @@ void ComputeFEP::restore_params()
             fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, pert->array[i][j]);
       }
 #endif
+
     }
+  }
+
+  if (chgflag) {
+    double *q = atom->q; 
+    int natom = atom->nlocal + atom->nghost;
+    for (i = 0; i < natom; i++)
+      q[i] = q_orig[i];
+  }
 
 #ifdef FEP_MAXDEBUG
+  for (int m = 0; m < npert; m++) {
+    Perturb *pert = &perturb[m];
     if (pert->which == ATOM) {
       int *atype = atom->type;
       double *q = atom->q; 
@@ -527,15 +539,9 @@ void ComputeFEP::restore_params()
             if (mask[i] & groupbit)
               fprintf(screen, "###FEP %5d %2d %9.5f\n", i, atype[i], q[i]);
       }
-#endif
-
-    if (chgflag) {
-      double *q = atom->q; 
-      int natom = atom->nlocal + atom->nghost;
-      for (int i = 0; i < natom; i++)
-        q[i] = q_orig[i];
     }
   }
+#endif
 
   // restore force, energy, virial array values
 
