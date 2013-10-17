@@ -37,8 +37,8 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#define FEP_DEBUG
-#define FEP_MAXDEBUG
+#undef FEP_DEBUG
+#undef FEP_MAXDEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -309,7 +309,14 @@ void ComputeFEP::compute_vector()
 {
   double pe0,pe1;
 
-  //  invoked_vector = update->ntimestep;
+  invoked_vector = update->ntimestep;
+
+  if (atom->nmax > nmax) {  // reallocate working arrays if necessary
+    deallocate_storage();
+    allocate_storage();
+  }
+
+  backup_qfev();  // backup charge, force, energy, virial array values
 
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
@@ -334,6 +341,8 @@ void ComputeFEP::compute_vector()
     timer->stamp(TIME_KSPACE);
   }
   pe1 = compute_epair();
+
+  restore_qfev(); // restore charge, force, energy, virial array values
 
   restore_params();
 
@@ -383,13 +392,6 @@ void ComputeFEP::change_params()
 {
   int i,j;
 
-  // reallocate working arrays if necessary
-
-  if (atom->nmax > nmax) {
-    deallocate_storage();
-    allocate_storage();
-  }
-
   // backup pair parameters and charges
 
   for (int m = 0; m < npert; m++) {
@@ -400,10 +402,6 @@ void ComputeFEP::change_params()
           pert->array_orig[i][j] = pert->array[i][j];
     }
   }
-
-  // backup charge, force, energy, virial array values
-
-  backup_qfev();
 
   // apply perturbation to interaction parameters
 
@@ -491,10 +489,6 @@ void ComputeFEP::restore_params()
 
     }
   }
-
-  // restore charge, force, energy, virial array values
-
-  restore_qfev();
 
 #ifdef FEP_MAXDEBUG
   for (int m = 0; m < npert; m++) {
