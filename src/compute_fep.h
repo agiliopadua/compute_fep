@@ -44,6 +44,8 @@ class ComputeFEP : public Compute {
   int fepinitflag;
   double temp_fep;
 
+  int nmax;
+  double *q_orig;
   double **f_orig;
   double eng_vdwl_orig,eng_coul_orig;
   double pvirial_orig[6];
@@ -51,9 +53,6 @@ class ComputeFEP : public Compute {
   double energy_orig;
   double kvirial_orig[6];
   double *keatom_orig,**kvatom_orig;
-
-  int nmax;
-  double *q_orig;
 
   struct Perturb {
     int which;
@@ -72,8 +71,10 @@ class ComputeFEP : public Compute {
   void change_params();
   double compute_epair();
   void restore_params();
-  void backup_accumulators();
-  void restore_accumulators();
+  void allocate_storage();
+  void deallocate_storage();
+  void backup_qfev();
+  void restore_qfev();
 };
 
 }

@@ -37,8 +37,8 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#undef FEP_DEBUG
-#undef FEP_MAXDEBUG
+#define FEP_DEBUG
+#define FEP_MAXDEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -50,11 +50,11 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
   //  scalar_flag = 1;
   scalar_flag = 0;
   vector_flag = 1;
-  size_vector = 2;
+  size_vector = 3;
   // extscalar = 0;
   extvector = 0;
 
-  vector = new double[2];
+  vector = new double[3];
 
   fepinitflag = 0;    // avoid init to run entirely when called by write_data
 
@@ -144,20 +144,9 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
       memory->create(perturb[m].array_orig,ntype+1,ntype+1,"fep:array_orig");
   }
 
-  nmax = atom->nmax;
-  if (chgflag)
-    memory->create(q_orig,nmax,"fep:q_orig");
+  // allocate space for charge, force, energy, virial arrays
 
-  // allocate arrays for force, energy, virial backups
-
-  int natom = atom->natoms;
-  memory->create(f_orig,natom,3,"fep:f_orig");
-  memory->create(peatom_orig,natom,"fep:peatom_orig");
-  memory->create(pvatom_orig,natom,6,"fep:pvatom_orig");
-  if (force->kspace) {
-    memory->create(keatom_orig,natom,"fep:keatom_orig");
-    memory->create(kvatom_orig,natom,6,"fep:kvatom_orig");
-  }
+  allocate_storage();
 
 }
 
@@ -176,16 +165,7 @@ ComputeFEP::~ComputeFEP()
   }
   delete [] perturb;
 
-  if (chgflag)
-    memory->destroy(q_orig);
-
-  memory->destroy(f_orig);
-  memory->destroy(peatom_orig);
-  memory->destroy(pvatom_orig);
-  if (force->kspace) {
-    memory->destroy(keatom_orig);
-    memory->destroy(kvatom_orig);
-  }
+  deallocate_storage();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -329,7 +309,7 @@ void ComputeFEP::compute_vector()
 {
   double pe0,pe1;
 
-  invoked_vector = update->ntimestep;
+  //  invoked_vector = update->ntimestep;
 
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
@@ -370,6 +350,7 @@ void ComputeFEP::compute_vector()
 #endif
 }
 
+
 /* ----------------------------------------------------------------------
    obtain pair energy from lammps accumulators
 ------------------------------------------------------------------------- */
@@ -393,6 +374,7 @@ double ComputeFEP::compute_epair()
   return eng_pair;
 }
 
+
 /* ----------------------------------------------------------------------
    change pair,kspace,atom parameters based on variable evaluation
 ------------------------------------------------------------------------- */
@@ -403,10 +385,9 @@ void ComputeFEP::change_params()
 
   // reallocate working arrays if necessary
 
-  if (chgflag && atom->nmax > nmax) {
-    memory->destroy(q_orig);
-    nmax = atom->nmax;
-    memory->create(q_orig,nmax,"fep:q_orig");
+  if (atom->nmax > nmax) {
+    deallocate_storage();
+    allocate_storage();
   }
 
   // backup pair parameters and charges
@@ -419,16 +400,10 @@ void ComputeFEP::change_params()
           pert->array_orig[i][j] = pert->array[i][j];
     }
   }
-  if (chgflag) {
-    double *q = atom->q; 
-    int natom = atom->nlocal + atom->nghost;
-    for (i = 0; i < natom; i++)
-      q_orig[i] = q[i];
-  }         
 
-  // backup force, energy, virial array values
+  // backup charge, force, energy, virial array values
 
-  backup_accumulators();
+  backup_qfev();
 
   // apply perturbation to interaction parameters
 
@@ -486,6 +461,7 @@ void ComputeFEP::change_params()
   if (anypair) force->pair->reinit();
 }
 
+
 /* ----------------------------------------------------------------------
    restore pair,atom parameters to original values
 ------------------------------------------------------------------------- */
@@ -494,7 +470,7 @@ void ComputeFEP::restore_params()
 {
   int i,j;
 
-  // restore pair parameters and charges
+  // restore pair parameters
 
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
@@ -516,12 +492,9 @@ void ComputeFEP::restore_params()
     }
   }
 
-  if (chgflag) {
-    double *q = atom->q; 
-    int natom = atom->nlocal + atom->nghost;
-    for (i = 0; i < natom; i++)
-      q[i] = q_orig[i];
-  }
+  // restore charge, force, energy, virial array values
+
+  restore_qfev();
 
 #ifdef FEP_MAXDEBUG
   for (int m = 0; m < npert; m++) {
@@ -543,10 +516,6 @@ void ComputeFEP::restore_params()
   }
 #endif
 
-  // restore force, energy, virial array values
-
-  restore_accumulators();
-
   // re-initialize pair styles if any PAIR settings were changed
   // this resets other coeffs that may depend on changed values,
   // and also offset and tail corrections
@@ -556,14 +525,55 @@ void ComputeFEP::restore_params()
 
 
 /* ----------------------------------------------------------------------
-   backup arrays with force, energy, virial accumulators
+   allocate and deallocate storage for charge, force, energy, virial arrays
 ------------------------------------------------------------------------- */
 
-void ComputeFEP::backup_accumulators()
+void ComputeFEP::allocate_storage()
+{
+  nmax = atom->nmax;
+  if (chgflag)
+    memory->create(q_orig,nmax,"fep:q_orig");
+  memory->create(f_orig,nmax,3,"fep:f_orig");
+  memory->create(peatom_orig,nmax,"fep:peatom_orig");
+  memory->create(pvatom_orig,nmax,6,"fep:pvatom_orig");
+  if (force->kspace) {
+    memory->create(keatom_orig,nmax,"fep:keatom_orig");
+    memory->create(kvatom_orig,nmax,6,"fep:kvatom_orig");
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputeFEP::deallocate_storage()
+{
+  if (chgflag)
+    memory->destroy(q_orig);
+  memory->destroy(f_orig);
+  memory->destroy(peatom_orig);
+  memory->destroy(pvatom_orig);
+  if (force->kspace) {
+    memory->destroy(keatom_orig);
+    memory->destroy(kvatom_orig);
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   backup and restore arrays with charge, force, energy, virial
+------------------------------------------------------------------------- */
+
+void ComputeFEP::backup_qfev()
 {
   int i;
 
-  int natom = atom->nlocal;
+  int natom = atom->nlocal + atom->nghost;
+
+  if (chgflag) {
+    double *q = atom->q; 
+    for (i = 0; i < natom; i++)
+      q_orig[i] = q[i];
+  }
+
   double **f = atom->f;
   for (i = 0; i < natom; i++) {
     f_orig[i][0] = f[i][0]; 
@@ -626,15 +636,19 @@ void ComputeFEP::backup_accumulators()
   }
 }
 
-/* ----------------------------------------------------------------------
-   restore arrays with force, energy, virial to original values
-------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
 
-void ComputeFEP::restore_accumulators()
+void ComputeFEP::restore_qfev()
 {
   int i;
 
-  int natom = atom->nlocal;
+  int natom = atom->nlocal + atom->nghost;
+
+  if (chgflag) {
+    double *q = atom->q; 
+    for (i = 0; i < natom; i++)
+      q[i] = q_orig[i];
+  }
 
   double **f = atom->f;
   for (i = 0; i < natom; i++) {
