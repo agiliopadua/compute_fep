@@ -105,7 +105,7 @@ into account, therefore the masses of the particles should not be
 modified between the reference and perturbed states, or along the
 alchemical transformation route.  This compute command does not change
 bond lengths or other internal coordinates, although this may not be
-an issue in many applications "(Karplus)"_#Karplus.
+an issue in many applications "(Boresch, Karplus)"_#BoreschKarplus.
 
 :line
 
@@ -210,8 +210,8 @@ The option defaults are {tail} = {no}, {volume} = {no}.
 :link(Mezei)
 [(Mezei)] Mezei, J Chem Phys, 86, 7084 (1987)
 
-:link(Karplus)
-[(Karplus)] Boresch and Karplus, J Phys Chem A, 103, 103 (1999)
+:link(BoreschKarplus)
+[(BoreschKarplus)] Boresch and Karplus, J Phys Chem A, 103, 103 (1999)
 
 :link(AllenTildesley)
 [(AllenTildesley)] Allen and Tildesley, Computer Simulation of
