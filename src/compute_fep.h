@@ -38,7 +38,7 @@ class ComputeFEP : public Compute {
 
  private:
   int npert;
-  int anypair;
+  int pairflag;
   int chgflag;
   int tailflag, volumeflag;
   int fepinitflag;

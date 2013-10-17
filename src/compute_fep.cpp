@@ -180,7 +180,7 @@ void ComputeFEP::init()
 
   // setup and error checks
 
-  anypair = 0;
+  pairflag = 0;
 
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
@@ -190,7 +190,7 @@ void ComputeFEP::init()
 
     if (pert->which == PAIR) {
 
-      anypair = 1;
+      pairflag = 1;
 
       Pair *pair = force->pair_match(pert->pstyle,1);
       if (pair == NULL) error->all(FLERR,"compute fep pair style does not exist");
@@ -456,7 +456,7 @@ void ComputeFEP::change_params()
   // this resets other coeffs that may depend on changed values,
   // and also offset and tail corrections
 
-  if (anypair) force->pair->reinit();
+  if (pairflag) force->pair->reinit();
 }
 
 
@@ -514,12 +514,12 @@ void ComputeFEP::restore_params()
   // this resets other coeffs that may depend on changed values,
   // and also offset and tail corrections
 
-  if (anypair) force->pair->reinit();
+  if (pairflag) force->pair->reinit();
 }
 
 
 /* ----------------------------------------------------------------------
-   allocate and deallocate storage for charge, force, energy, virial arrays
+   manage storage for charge, force, energy, virial arrays
 ------------------------------------------------------------------------- */
 
 void ComputeFEP::allocate_storage()
