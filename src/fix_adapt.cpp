@@ -272,7 +272,8 @@ void FixAdapt::pre_force(int vflag)
   //    return;
   //  change_settings();
 
-  // we want adapt to work at step 0 and at each nevery+1
+  // for better compatibility with fix ave/time,
+  // fix adapt should work at step 0 and at each nevery+1
 
   if (nevery == 1 || update->ntimestep == 0)
       change_settings();
