@@ -30,10 +30,10 @@ zero or more keyword/value pairs may be appended :l
 keyword = {tail} or {volume} :l
   {tail} value = {no} or {yes}
     {no} = ignore tail correction to pair energies (usually small in fep)
-    {yes} = include tail correction to pair energies :pre
+    {yes} = include tail correction to pair energies
   {volume} value = {no} or {yes}
-    {no} = ignore volume changes (e.g. in NVE or NVT trajectories)
-    {yes} = include volume fluctuations (e.g. in NpT trajectories)
+    {no} = ignore volume changes (e.g. in {NVE} or {NVT} trajectories)
+    {yes} = include volume fluctuations (e.g. in {NpT} trajectories) :pre
 :ule
 
 [Examples:]
@@ -50,13 +50,14 @@ potential energy without changing the atomic coordinates from those of
 the reference, unperturbed system. The potential energy of the system
 is decomposed in three terms: a background term corresponding to
 interaction sites whose parameters remain constant during the run, a
-reference term U_0 corresponding to the initial interactions of the
-atoms that will undergo perturbation, and a perturbed term U_1
-corresponding to the final interactions of those atoms:
+reference term {U}<sub>0</sub> corresponding to the initial
+interactions of the atoms that will undergo perturbation, and a
+perturbed term {U}<sub>1</sub> corresponding to the final interactions
+of those atoms:
 
 :c,image(Eqs/compute_fep_u.jpg)
 
-A coupling parameter "lambda" connects the reference and perturbed
+A coupling parameter &lambda; connects the reference and perturbed
 systems by varying from 0 to 1, such that
 
 :c,image(Eqs/compute_fep_lambda.jpg) 
@@ -69,7 +70,7 @@ energy:
 
 Therefore, the compute fep can perform perturbations to interaction
 parameters that are not directly proportional to the potential energy
-(e.g. sigma in Lennard-Jones potentials).
+(e.g. &sigma; in Lennard-Jones potentials).
 
 This command can be combined with "fix adapt"_fix_adapt.html to
 perform multistage free-energy perturbation calculations along
@@ -77,28 +78,29 @@ stepwise alchemical transformations during a simulation run:
 
 :c,image(Eqs/compute_fep_fep.jpg)
 
-By choosing a very small perturbation "delta" the compute fep can be
+By choosing a very small perturbation &delta; the compute fep can be
 used to implement the thermodynamic integration method by evaluating
-the derivative of the potential energy with respect to "lambda" using
+the derivative of the potential energy with respect to &lambda; using
 a numerical 2-point formula:
 
 :c,image(Eqs/compute_fep_ti.jpg)
 
-where w_i are weights of a numerical quadrature. The "fix
+where {w}<sub>i</sub> are weights of a numerical quadrature. The "fix
 adapt"_fix_adapt.html command can be used to define the stages of
-"lambda" at which the derivative is calculated and averaged.
+&lambda; at which the derivative is calculated and averaged.
 
 The finite-difference thermodynamic integration (FDTI) method
 "(Mezei)"_#Mezei is another possibility combining thermodynamic
 integration with an evaluation of the numerical derivative of the free
-energy by free-energy perturbation using a small "delta":
+energy by free-energy perturbation using a small &delta;:
 
 :c,image(Eqs/compute_fep_fdti.jpg)
 
 Concerning the choice of how the atomic parameters are perturbed in
 order to setup an alchemical transformation route, several strategies
 are available, such as single-topology or double-topology strategies
-"(Pearlman)"_#Pearlman.
+"(Pearlman)"_#Pearlman. The latter does not require modification of
+bond lengths, angles or other internal coordinates.
 
 IMPORTANT NOTES: This compute command does not take kinetic energy
 into account, therefore the masses of the particles should not be
@@ -168,19 +170,22 @@ between the reference and perturbed systems should be negligible.
 [Output info:]
 
 This compute calculates a global vector of length 3 which contains the
-energy difference (U_1 - U_0) as c_ID\[1\], the Boltzmann factor
-exp(-(U_1 - U_0) / kT) as c_ID\[2\] as and the volume of the
-simulation box V as c_ID\[3\]. U_1 is the pair potential energy
-obtained with the perturbed parameters and U_0 is the pair potential
+energy difference ({U}<sub>1</sub>-{U}<sub>0</sub>) as c_ID\[1\],
+the Boltzmann factor exp(-({U}<sub>1</sub>-{U}<sub>0</sub>)/{kT})
+as c_ID\[2\] as and the volume of the simulation box {V} as
+c_ID\[3\]. {U}<sub>1</sub> is the pair potential energy obtained with
+the perturbed parameters and {U}<sub>0</sub> is the pair potential
 energy obtained with the unperturbed parameters.
 
 If the keyword {volume} = {yes}, then the Boltzmann factor is
 multiplied by the volume so that correct ensemble averaging can be
-performed over trajectories in which the volume fluctuates "(Allen and
-Tildesley)"_#AllenTildesley.
+performed over trajectories during which the volume fluctuates "(Allen
+and Tildesley)"_#AllenTildesley.
 
-These results can be used by any command that uses a global scalar or
-vector from a compute as input.  See "Section_howto
+:c,image(Eqs/compute_fep_vol.jpg)
+
+These output results can be used by any command that uses a global
+scalar or vector from a compute as input.  See "Section_howto
 15"_Section_howto.html#howto_15 for an overview of LAMMPS output
 options. For example, the computed values can be averaged using "fix
 ave/time"_fix_ave_time.html to calculate the free-energy differences.

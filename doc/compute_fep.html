@@ -41,11 +41,11 @@
 
 <PRE>  <I>tail</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = ignore tail correction to pair energies (usually small in fep)
-    <I>yes</I> = include tail correction to pair energies 
-</PRE>
+    <I>yes</I> = include tail correction to pair energies
   <I>volume</I> value = <I>no</I> or <I>yes</I>
-    <I>no</I> = ignore volume changes (e.g. in NVE or NVT trajectories)
-    <I>yes</I> = include volume fluctuations (e.g. in NpT trajectories)
+    <I>no</I> = ignore volume changes (e.g. in <I>NVE</I> or <I>NVT</I> trajectories)
+    <I>yes</I> = include volume fluctuations (e.g. in <I>NpT</I> trajectories) 
+</PRE>
 
 </UL>
 <P><B>Examples:</B>
@@ -61,13 +61,14 @@ potential energy without changing the atomic coordinates from those of
 the reference, unperturbed system. The potential energy of the system
 is decomposed in three terms: a background term corresponding to
 interaction sites whose parameters remain constant during the run, a
-reference term U_0 corresponding to the initial interactions of the
-atoms that will undergo perturbation, and a perturbed term U_1
-corresponding to the final interactions of those atoms:
+reference term <I>U</I><sub>0</sub> corresponding to the initial
+interactions of the atoms that will undergo perturbation, and a
+perturbed term <I>U</I><sub>1</sub> corresponding to the final interactions
+of those atoms:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_u.jpg">
 </CENTER>
-<P>A coupling parameter "lambda" connects the reference and perturbed
+<P>A coupling parameter &lambda; connects the reference and perturbed
 systems by varying from 0 to 1, such that
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_lambda.jpg">
@@ -80,7 +81,7 @@ energy:
 </CENTER>
 <P>Therefore, the compute fep can perform perturbations to interaction
 parameters that are not directly proportional to the potential energy
-(e.g. sigma in Lennard-Jones potentials).
+(e.g. &sigma; in Lennard-Jones potentials).
 </P>
 <P>This command can be combined with <A HREF = "fix_adapt.html">fix adapt</A> to
 perform multistage free-energy perturbation calculations along
@@ -88,28 +89,29 @@ stepwise alchemical transformations during a simulation run:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_fep.jpg">
 </CENTER>
-<P>By choosing a very small perturbation "delta" the compute fep can be
+<P>By choosing a very small perturbation &delta; the compute fep can be
 used to implement the thermodynamic integration method by evaluating
-the derivative of the potential energy with respect to "lambda" using
+the derivative of the potential energy with respect to &lambda; using
 a numerical 2-point formula:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_ti.jpg">
 </CENTER>
-<P>where w_i are weights of a numerical quadrature. The <A HREF = "fix_adapt.html">fix
+<P>where <I>w</I><sub>i</sub> are weights of a numerical quadrature. The <A HREF = "fix_adapt.html">fix
 adapt</A> command can be used to define the stages of
-"lambda" at which the derivative is calculated and averaged.
+&lambda; at which the derivative is calculated and averaged.
 </P>
 <P>The finite-difference thermodynamic integration (FDTI) method
 <A HREF = "#Mezei">(Mezei)</A> is another possibility combining thermodynamic
 integration with an evaluation of the numerical derivative of the free
-energy by free-energy perturbation using a small "delta":
+energy by free-energy perturbation using a small &delta;:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_fdti.jpg">
 </CENTER>
 <P>Concerning the choice of how the atomic parameters are perturbed in
 order to setup an alchemical transformation route, several strategies
 are available, such as single-topology or double-topology strategies
-<A HREF = "#Pearlman">(Pearlman)</A>.
+<A HREF = "#Pearlman">(Pearlman)</A>. The latter does not require modification of
+bond lengths, angles or other internal coordinates.
 </P>
 <P>IMPORTANT NOTES: This compute command does not take kinetic energy
 into account, therefore the masses of the particles should not be
@@ -181,19 +183,22 @@ between the reference and perturbed systems should be negligible.
 <P><B>Output info:</B>
 </P>
 <P>This compute calculates a global vector of length 3 which contains the
-energy difference (U_1 - U_0) as c_ID[1], the Boltzmann factor
-exp(-(U_1 - U_0) / kT) as c_ID[2] as and the volume of the
-simulation box V as c_ID[3]. U_1 is the pair potential energy
-obtained with the perturbed parameters and U_0 is the pair potential
+energy difference (<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>) as c_ID[1],
+the Boltzmann factor exp(-(<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>)/<I>kT</I>)
+as c_ID[2] as and the volume of the simulation box <I>V</I> as
+c_ID[3]. <I>U</I><sub>1</sub> is the pair potential energy obtained with
+the perturbed parameters and <I>U</I><sub>0</sub> is the pair potential
 energy obtained with the unperturbed parameters.
 </P>
 <P>If the keyword <I>volume</I> = <I>yes</I>, then the Boltzmann factor is
 multiplied by the volume so that correct ensemble averaging can be
-performed over trajectories in which the volume fluctuates <A HREF = "#AllenTildesley">(Allen and
-Tildesley)</A>.
+performed over trajectories during which the volume fluctuates <A HREF = "#AllenTildesley">(Allen
+and Tildesley)</A>.
 </P>
-<P>These results can be used by any command that uses a global scalar or
-vector from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
+<CENTER><IMG SRC = "Eqs/compute_fep_vol.jpg">
+</CENTER>
+<P>These output results can be used by any command that uses a global
+scalar or vector from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
 15</A> for an overview of LAMMPS output
 options. For example, the computed values can be averaged using <A HREF = "fix_ave_time.html">fix
 ave/time</A> to calculate the free-energy differences.

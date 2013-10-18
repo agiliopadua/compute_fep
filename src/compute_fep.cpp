@@ -239,7 +239,8 @@ void ComputeFEP::init()
         else if (pert->which == ATOM)
           fprintf(screen, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
       }
-    } else if (logfile) {
+    }
+    if (logfile) {
       fprintf(logfile, "FEP settings ...");
       fprintf(logfile, "  temperature = %f\n", temp_fep);
       fprintf(logfile, "  tail %s\n", (tailflag ? "yes":"no"));

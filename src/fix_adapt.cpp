@@ -267,10 +267,18 @@ void FixAdapt::setup_pre_force(int vflag)
 void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
-  //  if (update->ntimestep && (update->ntimestep == 1 || (update->ntimestep-1) % nevery))
-  if (update->ntimestep % nevery)
-      return;
-  change_settings();
+
+  //  if (update->ntimestep % nevery)
+  //    return;
+  //  change_settings();
+
+  // we want adapt to work at step 0 and at each nevery+1
+
+  if (nevery == 1 || update->ntimestep == 0)
+      change_settings();
+  else if (update->ntimestep > 1 && !((update->ntimestep - 1) % nevery))
+      change_settings();
+  return;
 }
 
 /* ---------------------------------------------------------------------- */
