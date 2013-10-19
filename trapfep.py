@@ -32,4 +32,4 @@ for line in sys.stdin:
     lo = hi
     i += 1
 
-    print sum / i      # int_0^1: divide by i == multiply by delta
+print sum / i      # int_0^1: divide by i == multiply by delta
