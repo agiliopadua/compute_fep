@@ -22,6 +22,7 @@
 #include "pair.h"
 #include "pair_hybrid.h"
 #include "kspace.h"
+#include "bond.h"
 #include "input.h"
 #include "variable.h"
 #include "math_const.h"
@@ -32,8 +33,9 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace MathConst;
 
-enum{PAIR,KSPACE,ATOM};
+enum{PAIR,KSPACE,ATOM,BOND};
 enum{DIAMETER,CHARGE};
+enum{EQUIL,FCONST}
 
 /* ---------------------------------------------------------------------- */
 
@@ -61,6 +63,10 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix adapt command");
       nadapt++;
       iarg += 4;
+    } else if (strcmp(arg[iarg],"bond") == 0) {
+      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt command");
+      nadapt++;
+      iarg += 6;
     } else break;
   }
 
@@ -124,6 +130,30 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       } else error->all(FLERR,"Illegal fix adapt command");
       nadapt++;
       iarg += 4;
+    if (strcmp(arg[iarg],"bond") == 0) {
+      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt command");
+      adapt[nadapt].which = BOND;
+      if (strcmp(arg[iarg+1],"harmonic") != 0)
+        error->all(FLERR,"Illegal fix adapt command");
+      int n = strlen(arg[iarg+1]) + 1;
+      adapt[nadapt].bstyle = new char[n];
+      strcpy(adapt[nadapt].bstyle,arg[iarg+1]);
+      if (strcmp(arg[iarg+2],"r0") == 0)
+        adapt[nadapt].bparam = EQUIL;
+      else if (strcmp(arg[iarg+2],"K") == 0)
+        adapt[nadapt].bparam = FCONST;
+      } else error->all(FLERR,"Illegal fix adapt command");
+      force->bounds(arg[iarg+3],atom->ntypes,
+                    adapt[nadapt].ilo,adapt[nadapt].ihi);
+      force->bounds(arg[iarg+4],atom->ntypes,
+                    adapt[nadapt].jlo,adapt[nadapt].jhi);
+      if (strstr(arg[iarg+5],"v_") == arg[iarg+5]) {
+        n = strlen(&arg[iarg+5][2]) + 1;
+        adapt[nadapt].var = new char[n];
+        strcpy(adapt[nadapt].var,&arg[iarg+5][2]);
+      } else error->all(FLERR,"Illegal fix adapt command");
+      nadapt++;
+      iarg += 6;
     } else break;
   }
 
@@ -166,6 +196,8 @@ FixAdapt::~FixAdapt()
       delete [] adapt[m].pstyle;
       delete [] adapt[m].pparam;
       memory->destroy(adapt[m].array_orig);
+    } else if (adapt[m].which == BOND) {
+      delete [] adapt[m].bstyle;
     }
   }
   delete [] adapt;
@@ -238,6 +270,12 @@ void FixAdapt::init()
       if (ad->aparam == CHARGE) {
         if (!atom->q_flag)
           error->all(FLERR,"Fix adapt requires atom attribute charge");
+      }
+
+    } else if (ad->which == BOND) {
+      if (ad->bparam == EQUIL) {
+      }
+      if (ad->bparam == FCONST) {
       }
     }
   }
@@ -401,7 +439,10 @@ void FixAdapt::restore_settings()
 
     } else if (ad->which == ATOM) {
 
+    } else if (ad->which == BOND) {
+
     }
+
   }
 
   if (anypair) force->pair->reinit();
