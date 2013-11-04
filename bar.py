@@ -20,7 +20,7 @@ else:
     chi =  50.0
     
 def fermi(x):
-    return 1.0 / (1.0 + math.exp(x / rt))
+    return 1.0 / (1.0 + math.exp(x))
 
 def sumfermi(eng, c):
     sum = 0
@@ -53,14 +53,14 @@ def bisect(func, xlo, xhi, xtol = 1.0e-4, maxit = 20):
 
 print "Bennet's acceptance ratio method"
 print sys.argv[1], " K"
-rt = 0.008314 * float(sys.argv[1])
+rt = 0.008314 / 4.184 * float(sys.argv[1])
 
 eng01 = []                                # read datafiles
 with open(sys.argv[2], 'r') as f:
     for line in f:
         if line.startswith('#'):
             continue
-        eng01.append(float(line.split()[1]))
+        eng01.append(float(line.split()[1]) / rt)
 n0 = len(eng01)
 
 eng10 = []
@@ -68,7 +68,7 @@ with open(sys.argv[3], 'r') as f:
     for line in f:
         if line.startswith('#'):
             continue
-        eng10.append(float(line.split()[1]))
+        eng10.append(float(line.split()[1]) / rt)
 n1 = len(eng10)
 
 ln_n1n0 = math.log(n1/n0)
