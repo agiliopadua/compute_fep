@@ -55,21 +55,25 @@ compute 1 all fep 300 atom charge 2 0.001 volume yes
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Free-energy perturbation (FEP) method. Apply a perturbation to one or
-more parameters of the interaction potential and recalculate the pair
-potential energy without changing the atomic coordinates from those of
-the reference, unperturbed system. The potential energy of the system
-is decomposed in three terms: a background term corresponding to
-interaction sites whose parameters remain constant during the run, a
-reference term <I>U</I><sub>0</sub> corresponding to the initial
-interactions of the atoms that will undergo perturbation, and a
-perturbed term <I>U</I><sub>1</sub> corresponding to the final interactions
-of those atoms:
+<P>Apply a perturbation to parameters of the interaction potential and
+recalculate the pair potential energy without changing the atomic
+coordinates from those of the reference, unperturbed system. This
+compute can be used to calculate free energy differences using several
+methods: free-energy perturbation (FEP), finite-difference
+thermodynamic integration (FDTI) or Bennet's acceptance ratio method
+(BAR).
+</P>
+<P>The potential energy of the system is decomposed in three terms: a
+background term corresponding to interaction sites whose parameters
+remain constant, a reference term <I>U</I><sub>0</sub> corresponding to the
+initial interactions of the atoms that will undergo perturbation, and
+a term <I>U</I><sub>1</sub> corresponding to the final interactions of
+these atoms:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_u.jpg">
 </CENTER>
-<P>A coupling parameter &lambda; connects the reference and perturbed
-systems by varying from 0 to 1, such that
+<P>A coupling parameter &lambda; varying from 0 to 1 connects the
+reference and perturbed systems:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_lambda.jpg">
 </CENTER>
@@ -79,7 +83,7 @@ energy:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_linear.jpg">
 </CENTER>
-<P>Therefore, the compute fep can perform perturbations to interaction
+<P>Therefore, this compute can apply perturbations to interaction
 parameters that are not directly proportional to the potential energy
 (e.g. &sigma; in Lennard-Jones potentials).
 </P>
@@ -89,24 +93,35 @@ stepwise alchemical transformations during a simulation run:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_fep.jpg">
 </CENTER>
-<P>By choosing a very small perturbation &delta; the compute fep can be
-used to implement the thermodynamic integration method by evaluating
-the derivative of the potential energy with respect to &lambda; using
-a numerical 2-point formula:
+<P>This compute is suitable for the finite-difference thermodynamic
+integration (FDTI) method <A HREF = "#Mezei">(Mezei)</A>, which is based on an
+evaluation of the numerical derivative of the free energy by a
+perturbation method using a very small &delta;:
 </P>
-<CENTER><IMG SRC = "Eqs/compute_fep_ti.jpg">
+<CENTER><IMG SRC = "Eqs/compute_fep_fdti.jpg">
 </CENTER>
 <P>where <I>w</I><sub>i</sub> are weights of a numerical quadrature. The <A HREF = "fix_adapt.html">fix
 adapt</A> command can be used to define the stages of
 &lambda; at which the derivative is calculated and averaged.
 </P>
-<P>The finite-difference thermodynamic integration (FDTI) method
-<A HREF = "#Mezei">(Mezei)</A> is another possibility combining thermodynamic
-integration with an evaluation of the numerical derivative of the free
-energy by free-energy perturbation using a small &delta;:
+<P>The compute fep calculates the exponential term and also the potential
+energy difference <I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>. By choosing a very
+small perturbation &delta; the thermodynamic integration method can be
+implemented using a numerical evaluation of the derivative of the
+potential energy with respect to &lambda;:
 </P>
-<CENTER><IMG SRC = "Eqs/compute_fep_fdti.jpg">
+<CENTER><IMG SRC = "Eqs/compute_fep_ti.jpg">
 </CENTER>
+<P>Another technique to calculate free energy differences is Bennet's
+acceptance ratio method <A HREF = "#Bennet">(Bennet)</A>, which can be applied by
+calculating the potential energy differences with &delta; = 1.0 on
+both the forward and reverse routes:
+</P>
+<CENTER><IMG SRC = "Eqs/compute_fep_bar.jpg">
+</CENTER>
+<P>Then the quantity C is determined by numerical root finding such that
+the two sums on the numerator and denominator are equal.
+</P>
 <P>Concerning the choice of how the atomic parameters are perturbed in
 order to setup an alchemical transformation route, several strategies
 are available, such as single-topology or double-topology strategies
@@ -185,15 +200,15 @@ between the reference and perturbed systems should be negligible.
 <P>This compute calculates a global vector of length 3 which contains the
 energy difference (<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>) as c_ID[1],
 the Boltzmann factor exp(-(<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>)/<I>kT</I>)
-as c_ID[2] as and the volume of the simulation box <I>V</I> as
+as c_ID[2] and the volume of the simulation box <I>V</I> as
 c_ID[3]. <I>U</I><sub>1</sub> is the pair potential energy obtained with
 the perturbed parameters and <I>U</I><sub>0</sub> is the pair potential
 energy obtained with the unperturbed parameters.
 </P>
 <P>If the keyword <I>volume</I> = <I>yes</I>, then the Boltzmann factor is
 multiplied by the volume so that correct ensemble averaging can be
-performed over trajectories during which the volume fluctuates <A HREF = "#AllenTildesley">(Allen
-and Tildesley)</A>.
+performed over trajectories during which the volume fluctuates or
+changes <A HREF = "#AllenTildesley">(Allen and Tildesley)</A>.
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_vol.jpg">
 </CENTER>
@@ -228,6 +243,10 @@ LAMMPS</A> section for more info.
 <A NAME = "Mezei"></A>
 
 <P><B>(Mezei)</B> Mezei, J Chem Phys, 86, 7084 (1987)
+</P>
+<A NAME = "Bennet"></A>
+
+<P><B>(Bennet)</B> Bennet, J Comput Phys, 22, 245 (1976)
 </P>
 <A NAME = "BoreschKarplus"></A>
 
