@@ -20,7 +20,7 @@ else:
     chi =  50.0
     
 def fermi(x):
-    return 1.0 / (1.0 + math.exp(x))
+    return 1.0 / (1.0 + math.exp(x/rt))
 
 def sumfermi(eng, c):
     sum = 0
@@ -60,7 +60,7 @@ with open(sys.argv[2], 'r') as f:
     for line in f:
         if line.startswith('#'):
             continue
-        eng01.append(float(line.split()[1]) / rt)
+        eng01.append(float(line.split()[1]))
 n0 = len(eng01)
 
 eng10 = []
@@ -68,7 +68,7 @@ with open(sys.argv[3], 'r') as f:
     for line in f:
         if line.startswith('#'):
             continue
-        eng10.append(float(line.split()[1]) / rt)
+        eng10.append(float(line.split()[1]))
 n1 = len(eng10)
 
 ln_n1n0 = math.log(n1/n0)
@@ -82,10 +82,10 @@ c = bisect(bareq, clo, chi)
 
 sum0 = sumfermi(eng01, -c)
 sum1 = sumfermi(eng10, c)
-delta = math.log(sum1/sum0) + c - ln_n1n0
+delta = rt * (math.log(sum1/sum0) - ln_n1n0) + c
 
 print "c = ", c
 print "sum0 = ", sum0
 print "sum1 = ", sum1
-print "deltaF = ", delta
+print "deltaA = ", delta
 
