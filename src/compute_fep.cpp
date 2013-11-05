@@ -37,8 +37,8 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#undef FEP_DEBUG
-#undef FEP_MAXDEBUG
+#define FEP_DEBUG
+#define FEP_MAXDEBUG
 
 /* ---------------------------------------------------------------------- */
 

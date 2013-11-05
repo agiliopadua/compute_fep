@@ -109,6 +109,9 @@ void PairLJCutCoulCut::compute(int eflag, int vflag)
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
+      if (rsq < 1.0e-2)
+        rsq = 1.0e-2;
+
       if (rsq < cutsq[itype][jtype]) {
         r2inv = 1.0/rsq;
 
@@ -433,6 +436,9 @@ double PairLJCutCoulCut::single(int i, int j, int itype, int jtype,
                                 double &fforce)
 {
   double r2inv,r6inv,forcecoul,forcelj,phicoul,philj;
+
+  if (rsq < 1.0e-2)
+    rsq = 1.0e-2;
 
   r2inv = 1.0/rsq;
   if (rsq < cut_coulsq[itype][jtype])

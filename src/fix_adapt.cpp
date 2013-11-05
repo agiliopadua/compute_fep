@@ -16,6 +16,7 @@
 #include "stdlib.h"
 #include "fix_adapt.h"
 #include "atom.h"
+#include "comm.h"
 #include "update.h"
 #include "modify.h"
 #include "force.h"
@@ -34,6 +35,8 @@ using namespace MathConst;
 
 enum{PAIR,KSPACE,ATOM};
 enum{DIAMETER,CHARGE};
+
+#define ADAPT_DEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -253,6 +256,22 @@ void FixAdapt::init()
     }
   }
 
+#ifdef ADAPT_DEBUG
+  if (comm->me == 0 && screen) {
+    for (int m = 0; m < nadapt; m++) {
+      Adapt *ad = &adapt[m];
+      if (ad->which == PAIR && ad->pdim == 2) {
+        fprintf(screen, "###ADAPT original %s %s\n", ad->pstyle, ad->pparam);
+        fprintf(screen, "###ADAPT  I  J   old_param\n");
+        for (i = ad->ilo; i <= ad->ihi; i++)
+          for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
+            fprintf(screen, "###ADAPT %2d %2d %9.5f\n", i, j,
+                    ad->array_orig[i][j]);
+      }
+    }
+  }
+#endif
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -268,18 +287,18 @@ void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
 
-  //  if (update->ntimestep % nevery)
-  //    return;
-  //  change_settings();
+  if (update->ntimestep % nevery)
+    return;
+  change_settings();
 
   // for better compatibility with fix ave/time,
   // fix adapt should work at step 0 and at each nevery+1
 
-  if (nevery == 1 || update->ntimestep == 0)
-      change_settings();
-  else if (update->ntimestep > 1 && !((update->ntimestep - 1) % nevery))
-      change_settings();
-  return;
+  //  if (nevery == 1 || update->ntimestep == 0)
+  //    change_settings();
+  //  else if (update->ntimestep > 1 && !((update->ntimestep - 1) % nevery))
+  //    change_settings();
+  //  return;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -320,6 +339,17 @@ void FixAdapt::change_settings()
           for (i = ad->ilo; i <= ad->ihi; i++)
             for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
               ad->array[i][j] = value;
+
+#ifdef ADAPT_DEBUG
+        if (comm->me == 0 && screen) {
+          fprintf(screen, "###ADAPT change %s %s\n", ad->pstyle, ad->pparam);
+          fprintf(screen, "###ADAPT  I  J   param\n");
+          for (i = ad->ilo; i <= ad->ihi; i++)
+            for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
+              fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, ad->array[i][j]);
+        }
+#endif
+
       }
 
     // set kspace scale factor
@@ -366,7 +396,18 @@ void FixAdapt::change_settings()
         int nlocal = atom->nlocal;
         for (i = 0; i < nlocal; i++)
           if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
-            if (mask[i] & groupbit) q[i] = value; 
+            if (mask[i] & groupbit) q[i] = value;
+
+#ifdef ADAPT_DEBUG
+        if (comm->me == 0 && screen) {
+          fprintf(screen, "###ADAPT change charge\n");
+          fprintf(screen, "###ADAPT  atom  I   q\n");
+          for (i = 0; i < atom->nlocal; i++)
+            if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
+              if (mask[i] & groupbit)
+                fprintf(screen, "###ADAPT %5d %2d %9.5f\n", i, atype[i], q[i]);
+        }
+#endif
       }
     }
   }
