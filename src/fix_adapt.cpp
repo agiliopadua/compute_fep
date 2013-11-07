@@ -351,7 +351,7 @@ void FixAdapt::change_settings()
           fprintf(screen, "###ADAPT  I  J   param\n");
           for (i = ad->ilo; i <= ad->ihi; i++)
             for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
-              fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, ad->array[i][j]);
+              fprintf(screen, "###ADAPT %2d %2d %9.5f\n", i, j, ad->array[i][j]);
         }
 #endif
 
