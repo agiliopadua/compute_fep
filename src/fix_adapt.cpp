@@ -134,7 +134,7 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   resetflag = 0;
   scaleflag = 0;
-  nplusoneflag = 0;
+  afterflag = 0;
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"reset") == 0) {
@@ -149,10 +149,10 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       else if (strcmp(arg[iarg+1],"yes") == 0) scaleflag = 1;
       else error->all(FLERR,"Illegal fix adapt command");
       iarg += 2;
-    } else if (strcmp(arg[iarg],"nplusone") == 0) {
+    } else if (strcmp(arg[iarg],"after") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
-      if (strcmp(arg[iarg+1],"no") == 0) nplusoneflag = 0;
-      else if (strcmp(arg[iarg+1],"yes") == 0) nplusoneflag = 1;
+      if (strcmp(arg[iarg+1],"no") == 0) afterflag = 0;
+      else if (strcmp(arg[iarg+1],"yes") == 0) afterflag = 1;
       else error->all(FLERR,"Illegal fix adapt command");
       iarg += 2;
     } else error->all(FLERR,"Illegal fix adapt command");
@@ -294,12 +294,11 @@ void FixAdapt::pre_force(int vflag)
 {
   if (nevery == 0) return;
 
-  if (nplusoneflag) {           // update at n+1 (better with fix ave/time)
+  if (afterflag) {         // update at n+1 (better with fix ave/time)
     if (nevery == 1 || update->ntimestep == 0)
       change_settings();
     else if (update->ntimestep > 1 && !((update->ntimestep - 1) % nevery))
       change_settings();
-    return;
   } else {                      // original version: update at n
     if (update->ntimestep % nevery)
       return;

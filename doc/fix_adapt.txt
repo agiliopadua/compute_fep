@@ -29,7 +29,7 @@ attribute = {pair} or {kspace} or {atom} :l
     I = type(s) to set parameter for
     v_name = variable with name that calculates value of aparam :pre
 zero or more keyword/value pairs may be appended :l
-keyword = {scale} or {reset} or {nplusone} :l
+keyword = {scale} or {reset} or {after} :l
   {scale} value = {no} or {yes}
     {no} = the variable value is the new setting
     {yes} = the variable value multiplies the original setting
@@ -37,7 +37,7 @@ keyword = {scale} or {reset} or {nplusone} :l
     {no} = values will remain altered at the end of a run
     {yes} = reset altered values to their original values at the end
     of a run
-  {nplusone} value = {no} or {yes}
+  {after} value = {no} or {yes}
     {no} = parameters are adapted at timestep N
     {yes} = parameters are adapted one timestep after N :pre
 :ule
@@ -85,7 +85,7 @@ the parameters themselves are actually altered; make sure you use the
 {reset yes} option if you want the parameters to be restored to their
 initial values after the run.
 
-If the {nplusone} keyword is set to {yes}, then the parameters are
+If the {after} keyword is set to {yes}, then the parameters are
 changed one timestep after the multiple of N. In this manner, if a
 fix such as "fix ave/time" is used to calculate averages at every N
 timesteps, all the contributions to the average will be obtained with
@@ -249,4 +249,4 @@ This fix is not invoked during "energy minimization"_minimize.html.
 
 [Default:]
 
-The option defaults are scale = no, reset = no, nplusone = no.
+The option defaults are scale = no, reset = no, after = no.

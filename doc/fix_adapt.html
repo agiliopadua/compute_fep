@@ -39,7 +39,7 @@
 </PRE>
 <LI>zero or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>scale</I> or <I>reset</I> or <I>nplusone</I> 
+<LI>keyword = <I>scale</I> or <I>reset</I> or <I>after</I> 
 
 <PRE>  <I>scale</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = the variable value is the new setting
@@ -48,7 +48,7 @@
     <I>no</I> = values will remain altered at the end of a run
     <I>yes</I> = reset altered values to their original values at the end
     of a run
-  <I>nplusone</I> value = <I>no</I> or <I>yes</I>
+  <I>after</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = parameters are adapted at timestep N
     <I>yes</I> = parameters are adapted one timestep after N 
 </PRE>
@@ -97,7 +97,7 @@ the parameters themselves are actually altered; make sure you use the
 <I>reset yes</I> option if you want the parameters to be restored to their
 initial values after the run.
 </P>
-<P>If the <I>nplusone</I> keyword is set to <I>yes</I>, then the parameters are
+<P>If the <I>after</I> keyword is set to <I>yes</I>, then the parameters are
 changed one timestep after the multiple of N. In this manner, if a
 fix such as "fix ave/time" is used to calculate averages at every N
 timesteps, all the contributions to the average will be obtained with
@@ -263,6 +263,6 @@ This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>
 </P>
 <P><B>Default:</B>
 </P>
-<P>The option defaults are scale = no, reset = no, nplusone = no.
+<P>The option defaults are scale = no, reset = no, after = no.
 </P>
 </HTML>

@@ -38,7 +38,7 @@ class FixAdapt : public Fix {
   void post_run();
 
  private:
-  int nadapt,resetflag,scaleflag,nplusoneflag;
+  int nadapt,resetflag,scaleflag,afterflag;
   int anypair;
 
   struct Adapt {
