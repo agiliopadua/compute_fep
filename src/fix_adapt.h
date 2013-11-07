@@ -38,7 +38,7 @@ class FixAdapt : public Fix {
   void post_run();
 
  private:
-  int nadapt,resetflag,scaleflag;
+  int nadapt,resetflag,scaleflag,nplusoneflag;
   int anypair;
 
   struct Adapt {
@@ -50,6 +50,8 @@ class FixAdapt : public Fix {
     double *scalar,scalar_orig;
     double **array,**array_orig;
     int aparam;
+    char *bstyle;
+    int bparam;
   };
 
   Adapt *adapt;
