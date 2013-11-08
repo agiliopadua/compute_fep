@@ -33,7 +33,6 @@ class ComputeFEP : public Compute {
   ComputeFEP(class LAMMPS *, int, char **);
   ~ComputeFEP();
   void init();
-  //  double compute_scalar();
   void compute_vector();
 
  private:
@@ -55,11 +54,11 @@ class ComputeFEP : public Compute {
   double *keatom_orig,**kvatom_orig;
 
   struct Perturb {
-    int which;
+    int which,ivar;
+    char *var;
     char *pstyle,*pparam;
     int ilo,ihi,jlo,jhi;
     int pdim;
-    double delta;
     double **array,**array_orig;
     int aparam;
   };
@@ -68,8 +67,9 @@ class ComputeFEP : public Compute {
 
   class Pair *pair;
 
-  void change_params();
   double compute_epair();
+  void perturb_params();
+  void backup_params();
   void restore_params();
   void allocate_storage();
   void deallocate_storage();

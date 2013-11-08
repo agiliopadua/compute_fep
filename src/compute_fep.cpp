@@ -27,6 +27,8 @@
 #include "pair.h"
 #include "pair_hybrid.h"
 #include "kspace.h"
+#include "input.h"
+#include "variable.h"
 #include "timer.h"
 #include "memory.h"
 #include "error.h"
@@ -37,8 +39,8 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#define FEP_DEBUG
-#define FEP_MAXDEBUG
+#undef FEP_DEBUG
+#undef FEP_MAXDEBUG
 
 /* ---------------------------------------------------------------------- */
 
@@ -47,11 +49,9 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 5) error->all(FLERR,"Illegal number of arguments in compute fep");
 
-  //  scalar_flag = 1;
   scalar_flag = 0;
   vector_flag = 1;
   size_vector = 3;
-  // extscalar = 0;
   extvector = 0;
 
   vector = new double[3];
@@ -98,7 +98,11 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
                     perturb[npert].ilo,perturb[npert].ihi);
       force->bounds(arg[iarg+4],atom->ntypes,
                     perturb[npert].jlo,perturb[npert].jhi);
-      perturb[npert].delta = force->numeric(FLERR,arg[iarg+5]);
+      if (strstr(arg[iarg+5],"v_") == arg[iarg+5]) {
+        n = strlen(&arg[iarg+5][2]) + 1;
+        perturb[npert].var = new char[n];
+        strcpy(perturb[npert].var,&arg[iarg+5][2]);
+      } else error->all(FLERR,"Illegal variable in compute fep");
       npert++;
       iarg += 6;
     } else if (strcmp(arg[iarg],"atom") == 0) {
@@ -109,7 +113,11 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
       } else error->all(FLERR,"Illegal atom argument in compute fep");
       force->bounds(arg[iarg+2],atom->ntypes,
                     perturb[npert].ilo,perturb[npert].ihi);
-      perturb[npert].delta = force->numeric(FLERR,arg[iarg+3]);
+      if (strstr(arg[iarg+3],"v_") == arg[iarg+3]) {
+        int n = strlen(&arg[iarg+3][2]) + 1;
+        perturb[npert].var = new char[n];
+        strcpy(perturb[npert].var,&arg[iarg+3][2]);
+      } else error->all(FLERR,"Illegal variable in compute fep");
       npert++;
       iarg += 4;
     } else break;
@@ -117,7 +125,8 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
   // optional keywords
 
-  tailflag = volumeflag = 0;
+  tailflag = 0;
+  volumeflag = 0;
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"tail") == 0) {
@@ -157,6 +166,7 @@ ComputeFEP::~ComputeFEP()
   delete [] vector;
 
   for (int m = 0; m < npert; m++) {
+    delete [] perturb[m].var;
     if (perturb[m].which == PAIR) {
       delete [] perturb[m].pstyle;
       delete [] perturb[m].pparam;
@@ -185,11 +195,16 @@ void ComputeFEP::init()
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
 
+    pert->ivar = input->variable->find(pert->var);
+    if (pert->ivar < 0)
+      error->all(FLERR,"Variable name for compute fep does not exist");
+    if (!input->variable->equalstyle(pert->ivar))
+      error->all(FLERR,"Variable for compute fep is of invalid style");
+
     if (force->pair == NULL)
       error->all(FLERR,"compute fep pair requires pair interactions");
 
     if (pert->which == PAIR) {
-
       pairflag = 1;
 
       Pair *pair = force->pair_match(pert->pstyle,1);
@@ -234,10 +249,10 @@ void ComputeFEP::init()
       for (int m = 0; m < npert; m++) {
         Perturb *pert = &perturb[m];
         if (pert->which == PAIR)
-          fprintf(screen, "  %s %s %d-%d %d-%d %f\n", pert->pstyle, pert->pparam,
-                  pert->ilo, pert->ihi, pert->jlo, pert->jhi, pert->delta);
+          fprintf(screen, "  %s %s %d-%d %d-%d\n", pert->pstyle, pert->pparam,
+                  pert->ilo, pert->ihi, pert->jlo, pert->jhi);
         else if (pert->which == ATOM)
-          fprintf(screen, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
+          fprintf(screen, "  %d-%d charge\n", pert->ilo, pert->ihi);
       }
     }
     if (logfile) {
@@ -247,10 +262,10 @@ void ComputeFEP::init()
       for (int m = 0; m < npert; m++) {
         Perturb *pert = &perturb[m];
         if (pert->which == PAIR)
-          fprintf(logfile, "  %s %s %d-%d %d-%d %f\n", pert->pstyle, pert->pparam,
-                  pert->ilo, pert->ihi, pert->jlo, pert->jhi, pert->delta);
+          fprintf(logfile, "  %s %s %d-%d %d-%d\n", pert->pstyle, pert->pparam,
+                  pert->ilo, pert->ihi, pert->jlo, pert->jhi);
         else if (pert->which == ATOM)
-          fprintf(logfile, "  %d-%d charge %f\n", pert->ilo, pert->ihi, pert->delta);
+          fprintf(logfile, "  %d-%d charge\n", pert->ilo, pert->ihi);
       }
     }
   }
@@ -259,52 +274,6 @@ void ComputeFEP::init()
 
 /* ---------------------------------------------------------------------- */
 
-/*
-double ComputeFEP::compute_scalar()
-{
-  double pe0,pe1;
-
-  invoked_scalar = update->ntimestep;
-
-  timer->stamp();
-  if (force->pair && force->pair->compute_flag) {
-    force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
-  }
-  if (force->kspace && force->kspace->compute_flag) {
-    force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
-  }
-  pe0 = compute_epair();
-
-  change_params();
-
-  timer->stamp();
-  if (force->pair && force->pair->compute_flag) {
-    force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
-  }
-  if (force->kspace && force->kspace->compute_flag) {
-    force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
-  }
-  pe1 = compute_epair();
-
-  restore_params();
-
-  scalar = exp(-(pe1-pe0)/(force->boltz*temp_fep));
-
-#ifdef FEP_DEBUG
-  if (comm->me == 0 && screen)
-    fprintf(screen, "FEP u0 = %f  u1 = %f  u1-u0 = %f  exp = %f\n",
-            pe0,pe1,pe1-pe0,scalar);
-#endif
-
-  return scalar;
-}
-*/
-
-/* ---------------------------------------------------------------------- */
 
 void ComputeFEP::compute_vector()
 {
@@ -317,7 +286,8 @@ void ComputeFEP::compute_vector()
     allocate_storage();
   }
 
-  backup_qfev();  // backup charge, force, energy, virial array values
+  backup_qfev();   // backup charge, force, energy, virial array values
+  backup_params(); // backup pair parameters
 
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
@@ -330,7 +300,7 @@ void ComputeFEP::compute_vector()
   }
   pe0 = compute_epair();
 
-  change_params();
+  perturb_params();
 
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
@@ -343,9 +313,8 @@ void ComputeFEP::compute_vector()
   }
   pe1 = compute_epair();
 
-  restore_qfev(); // restore charge, force, energy, virial array values
-
-  restore_params();
+  restore_qfev();   // restore charge, force, energy, virial array values
+  restore_params(); // restore pair parameters
 
   vector[0] = pe1-pe0;
   vector[1] = exp(-(pe1-pe0)/(force->boltz*temp_fep));
@@ -386,37 +355,27 @@ double ComputeFEP::compute_epair()
 
 
 /* ----------------------------------------------------------------------
-   change pair,kspace,atom parameters based on variable evaluation
+   apply perturbation to pair, atom parameters based on variable evaluation
 ------------------------------------------------------------------------- */
 
-void ComputeFEP::change_params()
+void ComputeFEP::perturb_params()
 {
   int i,j;
 
-  // backup pair parameters and charges
-
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
-    if (pert->which == PAIR) {
-      for (i = pert->ilo; i <= pert->ihi; i++)
-        for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
-          pert->array_orig[i][j] = pert->array[i][j];
-    }
-  }
 
-  // apply perturbation to interaction parameters
-
-  for (int m = 0; m < npert; m++) {
-    Perturb *pert = &perturb[m];
+    double delta = input->variable->compute_equal(pert->ivar);
 
     if (pert->which == PAIR) {      // modify pair parameters
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
-          pert->array[i][j] = pert->array_orig[i][j] + pert->delta;
+          pert->array[i][j] = pert->array_orig[i][j] + delta;
       
 #ifdef FEP_MAXDEBUG
       if (comm->me == 0 && screen) {
-        fprintf(screen, "###FEP change %s %s\n", pert->pstyle, pert->pparam);
+        fprintf(screen, "###FEP change %s %s, delta = %f\n",
+                pert->pstyle, pert->pparam, delta);
         fprintf(screen, "###FEP  I  J   old_param new_param\n");
         for (i = pert->ilo; i <= pert->ihi; i++)
           for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
@@ -435,11 +394,11 @@ void ComputeFEP::change_params()
         for (i = 0; i < natom; i++)
           if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
             if (mask[i] & groupbit)
-              q[i] += pert->delta; 
+              q[i] += delta; 
 
 #ifdef FEP_MAXDEBUG
         if (comm->me == 0 && screen) {
-          fprintf(screen, "###FEP change charge\n");
+          fprintf(screen, "###FEP change charge, delta = %f\n", delta);
           fprintf(screen, "###FEP  atom  I   old_q     new_q\n");
           for (i = 0; i < atom->nlocal; i++)
             if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
@@ -462,14 +421,31 @@ void ComputeFEP::change_params()
 
 
 /* ----------------------------------------------------------------------
-   restore pair,atom parameters to original values
+   backup pair parameters
+------------------------------------------------------------------------- */
+
+void ComputeFEP::backup_params()
+{
+  int i,j;
+
+  for (int m = 0; m < npert; m++) {
+    Perturb *pert = &perturb[m];
+    if (pert->which == PAIR) {
+      for (i = pert->ilo; i <= pert->ihi; i++)
+        for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
+          pert->array_orig[i][j] = pert->array[i][j];
+    }
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   restore pair parameters to original values
 ------------------------------------------------------------------------- */
 
 void ComputeFEP::restore_params()
 {
   int i,j;
-
-  // restore pair parameters
 
   for (int m = 0; m < npert; m++) {
     Perturb *pert = &perturb[m];
@@ -487,19 +463,14 @@ void ComputeFEP::restore_params()
             fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, pert->array[i][j]);
       }
 #endif
-
     }
-  }
-
 #ifdef FEP_MAXDEBUG
-  for (int m = 0; m < npert; m++) {
-    Perturb *pert = &perturb[m];
     if (pert->which == ATOM) {
-      int *atype = atom->type;
-      double *q = atom->q; 
-      int *mask = atom->mask;
-      int natom = atom->nlocal;
       if (comm->me == 0 && screen) {
+        int *atype = atom->type;
+        double *q = atom->q; 
+        int *mask = atom->mask;
+        int natom = atom->nlocal;
         fprintf(screen, "###FEP restore charge\n");
         fprintf(screen, "###FEP  atom  I   q\n");
         for (i = 0; i < natom; i++)
@@ -508,8 +479,8 @@ void ComputeFEP::restore_params()
               fprintf(screen, "###FEP %5d %2d %9.5f\n", i, atype[i], q[i]);
       }
     }
-  }
 #endif
+  }
 
   // re-initialize pair styles if any PAIR settings were changed
   // this resets other coeffs that may depend on changed values,

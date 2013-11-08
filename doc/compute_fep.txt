@@ -17,15 +17,15 @@ fep = name of this compute command :l
 temp = external temperature (as specified for constant-temperature run) :l
 one or more attribute with args may be appended :l
 attribute = {pair} or {atom} :l
-  {pair} args = pstyle pparam I J delta
+  {pair} args = pstyle pparam I J v_delta
     pstyle = pair style name, e.g. lj/cut
     pparam = parameter to perturb
     I,J = type pair(s) to set parameter for
-    delta = perturbation to apply (in the units of the parameter)
-  {atom} args = aparam I delta
+    v_delta = variable with perturbation to apply (in the units of the parameter)
+  {atom} args = aparam I v_delta
     aparam = parameter to adapt over time
     I = type to set parameter for
-    delta = perturbation to apply (in the units of the parameter) :pre
+    v_delta = variable with perturbation to apply (in the units of the parameter) :pre
 zero or more keyword/value pairs may be appended :l
 keyword = {tail} or {volume} :l
   {tail} value = {no} or {yes}
@@ -38,8 +38,9 @@ keyword = {tail} or {volume} :l
 
 [Examples:]
 
-compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma 1 * 0.001
-compute 1 all fep 300 atom charge 2 0.001 volume yes :pre
+compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut
+sigma 1 * v_delta volume yes
+compute 1 all fep 300 atom charge 2 v_delta :pre
 
 
 [Description:]
@@ -165,6 +166,11 @@ used, then the {pstyle} will be a sub-style name.  You must specify
 I,J arguments that correspond to type pair values defined (via the
 "pair_coeff"_pair_coeff.html command) for that sub-style.
 
+The {v_name} argument for keyword {pair} is the name of an
+"equal-style variable"_variable.html which will be evaluated each time
+this compute is invoked.  It should be specified as v_name, where name
+is the variable name.
+
 :line
 
 The {atom} attribute enables atom properties to be changed.  The
@@ -172,6 +178,11 @@ The {atom} attribute enables atom properties to be changed.  The
 current list of atom parameters that can be used with this compute:
 
 charge = charge on particle :ul
+
+The {v_name} argument for keyword {pair} is the name of an
+"equal-style variable"_variable.html which will be evaluated each time
+this compute is invoked.  It should be specified as v_name, where name
+is the variable name.
 
 :line
 

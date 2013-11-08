@@ -25,15 +25,15 @@
 
 <LI>attribute = <I>pair</I> or <I>atom</I> 
 
-<PRE>  <I>pair</I> args = pstyle pparam I J delta
+<PRE>  <I>pair</I> args = pstyle pparam I J v_delta
     pstyle = pair style name, e.g. lj/cut
     pparam = parameter to perturb
     I,J = type pair(s) to set parameter for
-    delta = perturbation to apply (in the units of the parameter)
-  <I>atom</I> args = aparam I delta
+    v_delta = variable with perturbation to apply (in the units of the parameter)
+  <I>atom</I> args = aparam I v_delta
     aparam = parameter to adapt over time
     I = type to set parameter for
-    delta = perturbation to apply (in the units of the parameter) 
+    v_delta = variable with perturbation to apply (in the units of the parameter) 
 </PRE>
 <LI>zero or more keyword/value pairs may be appended 
 
@@ -50,8 +50,9 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>compute 1 all fep 298 pair lj/cut epsilon 1 * 0.001 pair lj/cut sigma 1 * 0.001
-compute 1 all fep 300 atom charge 2 0.001 volume yes 
+<PRE>compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut
+sigma 1 * v_delta volume yes
+compute 1 all fep 300 atom charge 2 v_delta 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -178,6 +179,11 @@ used, then the <I>pstyle</I> will be a sub-style name.  You must specify
 I,J arguments that correspond to type pair values defined (via the
 <A HREF = "pair_coeff.html">pair_coeff</A> command) for that sub-style.
 </P>
+<P>The <I>v_name</I> argument for keyword <I>pair</I> is the name of an
+<A HREF = "variable.html">equal-style variable</A> which will be evaluated each time
+this compute is invoked.  It should be specified as v_name, where name
+is the variable name.
+</P>
 <HR>
 
 <P>The <I>atom</I> attribute enables atom properties to be changed.  The
@@ -186,6 +192,11 @@ current list of atom parameters that can be used with this compute:
 </P>
 <UL><LI>charge = charge on particle 
 </UL>
+<P>The <I>v_name</I> argument for keyword <I>pair</I> is the name of an
+<A HREF = "variable.html">equal-style variable</A> which will be evaluated each time
+this compute is invoked.  It should be specified as v_name, where name
+is the variable name.
+</P>
 <HR>
 
 <P>The <I>tail</I> keyword controls the calculation of the tail correction to
