@@ -50,8 +50,6 @@ class FixAdapt : public Fix {
     double *scalar,scalar_orig;
     double **array,**array_orig;
     int aparam;
-    char *bstyle;
-    int bparam;
   };
 
   Adapt *adapt;
