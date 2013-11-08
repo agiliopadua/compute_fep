@@ -4,11 +4,12 @@
 import sys, math
 
 if len(sys.argv) < 3:
-    print "Integrate compute fep results using the trapezoidal rule"
-    print "usage: trapfep.py temperature hderiv < fep.lmp"
+    print "Finite Difference Thermodynamic Integration (Mezei 1987)"
+    print "Trapezoidal integration of compute_fep results at equally-spaced points"
+    print "usage: fdti.py temperature hderiv < fep.lmp"
     sys.exit()
 
-rt = 0.008314 * float(sys.argv[1])
+rt = 0.008314 / 4.184 * float(sys.argv[1])
 hderiv = float(sys.argv[2])
 
 line = sys.stdin.readline()
