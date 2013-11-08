@@ -36,7 +36,7 @@ using namespace MathConst;
 enum{PAIR,KSPACE,ATOM};
 enum{DIAMETER,CHARGE};
 
-#define ADAPT_DEBUG
+#undef ADAPT_DEBUG
 
 /* ---------------------------------------------------------------------- */
 
