@@ -19,7 +19,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "pair_lj_cut_coul_long.h"
+#include "pair_ljcap_cut_coul_long.h"
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
@@ -47,7 +47,7 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJCutCoulLong::PairLJCutCoulLong(LAMMPS *lmp) : Pair(lmp)
+PairLJCapCutCoulLong::PairLJCapCutCoulLong(LAMMPS *lmp) : Pair(lmp)
 {
   ewaldflag = pppmflag = 1;
   respa_enable = 1;
@@ -58,7 +58,7 @@ PairLJCutCoulLong::PairLJCutCoulLong(LAMMPS *lmp) : Pair(lmp)
 
 /* ---------------------------------------------------------------------- */
 
-PairLJCutCoulLong::~PairLJCutCoulLong()
+PairLJCapCutCoulLong::~PairLJCapCutCoulLong()
 {
   if (allocated) {
     memory->destroy(setflag);
@@ -79,7 +79,7 @@ PairLJCutCoulLong::~PairLJCutCoulLong()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::compute(int eflag, int vflag)
+void PairLJCapCutCoulLong::compute(int eflag, int vflag)
 {
   int i,ii,j,jj,inum,jnum,itype,jtype,itable;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
@@ -209,7 +209,7 @@ void PairLJCutCoulLong::compute(int eflag, int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::compute_inner()
+void PairLJCapCutCoulLong::compute_inner()
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,fpair;
@@ -294,7 +294,7 @@ void PairLJCutCoulLong::compute_inner()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::compute_middle()
+void PairLJCapCutCoulLong::compute_middle()
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,fpair;
@@ -388,7 +388,7 @@ void PairLJCutCoulLong::compute_middle()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::compute_outer(int eflag, int vflag)
+void PairLJCapCutCoulLong::compute_outer(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype,itable;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
@@ -570,7 +570,7 @@ void PairLJCutCoulLong::compute_outer(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::allocate()
+void PairLJCapCutCoulLong::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -597,7 +597,7 @@ void PairLJCutCoulLong::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::settings(int narg, char **arg)
+void PairLJCapCutCoulLong::settings(int narg, char **arg)
 {
  if (narg < 1 || narg > 2) error->all(FLERR,"Illegal pair_style command");
 
@@ -619,7 +619,7 @@ void PairLJCutCoulLong::settings(int narg, char **arg)
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::coeff(int narg, char **arg)
+void PairLJCapCutCoulLong::coeff(int narg, char **arg)
 {
   if (narg < 4 || narg > 5)
     error->all(FLERR,"Incorrect args for pair coefficients");
@@ -653,7 +653,7 @@ void PairLJCutCoulLong::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::init_style()
+void PairLJCapCutCoulLong::init_style()
 {
   if (!atom->q_flag)
     error->all(FLERR,"Pair style lj/cut/coul/long requires atom attribute q");
@@ -719,7 +719,7 @@ void PairLJCutCoulLong::init_style()
    regular or rRESPA
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::init_list(int id, NeighList *ptr)
+void PairLJCapCutCoulLong::init_list(int id, NeighList *ptr)
 {
   if (id == 0) list = ptr;
   else if (id == 1) listinner = ptr;
@@ -731,7 +731,7 @@ void PairLJCutCoulLong::init_list(int id, NeighList *ptr)
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairLJCutCoulLong::init_one(int i, int j)
+double PairLJCapCutCoulLong::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
@@ -800,7 +800,7 @@ double PairLJCutCoulLong::init_one(int i, int j)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::write_restart(FILE *fp)
+void PairLJCapCutCoulLong::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -820,7 +820,7 @@ void PairLJCutCoulLong::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::read_restart(FILE *fp)
+void PairLJCapCutCoulLong::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
 
@@ -849,7 +849,7 @@ void PairLJCutCoulLong::read_restart(FILE *fp)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::write_restart_settings(FILE *fp)
+void PairLJCapCutCoulLong::write_restart_settings(FILE *fp)
 {
   fwrite(&cut_lj_global,sizeof(double),1,fp);
   fwrite(&cut_coul,sizeof(double),1,fp);
@@ -864,7 +864,7 @@ void PairLJCutCoulLong::write_restart_settings(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::read_restart_settings(FILE *fp)
+void PairLJCapCutCoulLong::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
     fread(&cut_lj_global,sizeof(double),1,fp);
@@ -889,7 +889,7 @@ void PairLJCutCoulLong::read_restart_settings(FILE *fp)
    proc 0 writes to data file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::write_data(FILE *fp)
+void PairLJCapCutCoulLong::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     fprintf(fp,"%d %g %g\n",i,epsilon[i][i],sigma[i][i]);
@@ -899,7 +899,7 @@ void PairLJCutCoulLong::write_data(FILE *fp)
    proc 0 writes all pairs to data file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulLong::write_data_all(FILE *fp)
+void PairLJCapCutCoulLong::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
@@ -908,7 +908,7 @@ void PairLJCutCoulLong::write_data_all(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double PairLJCutCoulLong::single(int i, int j, int itype, int jtype,
+double PairLJCapCutCoulLong::single(int i, int j, int itype, int jtype,
                                  double rsq,
                                  double factor_coul, double factor_lj,
                                  double &fforce)
@@ -977,7 +977,7 @@ double PairLJCutCoulLong::single(int i, int j, int itype, int jtype,
 
 /* ---------------------------------------------------------------------- */
 
-void *PairLJCutCoulLong::extract(const char *str, int &dim)
+void *PairLJCapCutCoulLong::extract(const char *str, int &dim)
 {
   dim = 0;
   if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;

@@ -15,7 +15,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "pair_lj_cut_coul_cut.h"
+#include "pair_ljcap_cut_coul_cut.h"
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
@@ -30,14 +30,14 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJCutCoulCut::PairLJCutCoulCut(LAMMPS *lmp) : Pair(lmp)
+PairLJCapCutCoulCut::PairLJCapCutCoulCut(LAMMPS *lmp) : Pair(lmp)
 {
   writedata = 1;
 }
 
 /* ---------------------------------------------------------------------- */
 
-PairLJCutCoulCut::~PairLJCutCoulCut()
+PairLJCapCutCoulCut::~PairLJCapCutCoulCut()
 {
   if (allocated) {
     memory->destroy(setflag);
@@ -59,7 +59,7 @@ PairLJCutCoulCut::~PairLJCutCoulCut()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::compute(int eflag, int vflag)
+void PairLJCapCutCoulCut::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
@@ -159,7 +159,7 @@ void PairLJCutCoulCut::compute(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::allocate()
+void PairLJCapCutCoulCut::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -188,7 +188,7 @@ void PairLJCutCoulCut::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::settings(int narg, char **arg)
+void PairLJCapCutCoulCut::settings(int narg, char **arg)
 {
   if (narg < 1 || narg > 2) error->all(FLERR,"Illegal pair_style command");
 
@@ -213,7 +213,7 @@ void PairLJCutCoulCut::settings(int narg, char **arg)
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::coeff(int narg, char **arg)
+void PairLJCapCutCoulCut::coeff(int narg, char **arg)
 {
   if (narg < 4 || narg > 6) 
     error->all(FLERR,"Incorrect args for pair coefficients");
@@ -250,7 +250,7 @@ void PairLJCutCoulCut::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::init_style()
+void PairLJCapCutCoulCut::init_style()
 {
   if (!atom->q_flag)
     error->all(FLERR,"Pair style lj/cut/coul/cut requires atom attribute q");
@@ -262,7 +262,7 @@ void PairLJCutCoulCut::init_style()
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairLJCutCoulCut::init_one(int i, int j)
+double PairLJCapCutCoulCut::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
@@ -327,7 +327,7 @@ double PairLJCutCoulCut::init_one(int i, int j)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::write_restart(FILE *fp)
+void PairLJCapCutCoulCut::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -348,7 +348,7 @@ void PairLJCutCoulCut::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::read_restart(FILE *fp)
+void PairLJCapCutCoulCut::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
   allocate();
@@ -378,7 +378,7 @@ void PairLJCutCoulCut::read_restart(FILE *fp)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::write_restart_settings(FILE *fp)
+void PairLJCapCutCoulCut::write_restart_settings(FILE *fp)
 {
   fwrite(&cut_lj_global,sizeof(double),1,fp);
   fwrite(&cut_coul_global,sizeof(double),1,fp);
@@ -391,7 +391,7 @@ void PairLJCutCoulCut::write_restart_settings(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::read_restart_settings(FILE *fp)
+void PairLJCapCutCoulCut::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
     fread(&cut_lj_global,sizeof(double),1,fp);
@@ -411,7 +411,7 @@ void PairLJCutCoulCut::read_restart_settings(FILE *fp)
    proc 0 writes to data file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::write_data(FILE *fp)
+void PairLJCapCutCoulCut::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     fprintf(fp,"%d %g %g\n",i,epsilon[i][i],sigma[i][i]);
@@ -421,7 +421,7 @@ void PairLJCutCoulCut::write_data(FILE *fp)
    proc 0 writes all pairs to data file
 ------------------------------------------------------------------------- */
 
-void PairLJCutCoulCut::write_data_all(FILE *fp)
+void PairLJCapCutCoulCut::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
@@ -430,7 +430,7 @@ void PairLJCutCoulCut::write_data_all(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double PairLJCutCoulCut::single(int i, int j, int itype, int jtype,
+double PairLJCapCutCoulCut::single(int i, int j, int itype, int jtype,
                                 double rsq,
                                 double factor_coul, double factor_lj,
                                 double &fforce)
@@ -466,7 +466,7 @@ double PairLJCutCoulCut::single(int i, int j, int itype, int jtype,
 
 /* ---------------------------------------------------------------------- */
 
-void *PairLJCutCoulCut::extract(const char *str, int &dim)
+void *PairLJCapCutCoulCut::extract(const char *str, int &dim)
 {
   dim = 0;
   if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;
