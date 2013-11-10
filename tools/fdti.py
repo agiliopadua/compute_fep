@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# trapfep.py - integrate compute fep results using the trapezoidal rule
+# fdti.py - integrate compute fep results using the trapezoidal rule
 
 import sys, math
 
