@@ -198,7 +198,8 @@ the Boltzmann factor exp(-({U}<sub>1</sub>-{U}<sub>0</sub>)/{kT})
 as c_ID\[2\] and the volume of the simulation box {V} as
 c_ID\[3\]. {U}<sub>1</sub> is the pair potential energy obtained with
 the perturbed parameters and {U}<sub>0</sub> is the pair potential
-energy obtained with the unperturbed parameters.
+energy obtained with the unperturbed parameters. These energies
+include kspace terms if these are used in the simulation.
 
 If the keyword {volume} = {yes}, then the Boltzmann factor is
 multiplied by the volume so that correct ensemble averaging can be
