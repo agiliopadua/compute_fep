@@ -15,13 +15,13 @@
 </P>
 <PRE>compute ID group-ID fep temp attribute args ... keyword value ... 
 </PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
+<UL><LI>ID, group-ID are documented in the <A HREF = "compute.html">compute</A> command 
 
 <LI>fep = name of this compute command 
 
 <LI>temp = external temperature (as specified for constant-temperature run) 
 
-<LI>one or more attribute with args may be appended 
+<LI>one or more attributes with args may be appended 
 
 <LI>attribute = <I>pair</I> or <I>atom</I> 
 
@@ -44,14 +44,13 @@
     <I>yes</I> = include tail correction to pair energies
   <I>volume</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = ignore volume changes (e.g. in <I>NVE</I> or <I>NVT</I> trajectories)
-    <I>yes</I> = include volume fluctuations (e.g. in <I>NpT</I> trajectories) 
+    <I>yes</I> = include volume changes (e.g. in <I>NpT</I> trajectories) 
 </PRE>
 
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut
-sigma 1 * v_delta volume yes
+<PRE>compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut sigma 1 * v_delta volume yes
 compute 1 all fep 300 atom charge 2 v_delta 
 </PRE>
 <P><B>Description:</B>
@@ -60,7 +59,7 @@ compute 1 all fep 300 atom charge 2 v_delta
 recalculate the pair potential energy without changing the atomic
 coordinates from those of the reference, unperturbed system. This
 compute can be used to calculate free energy differences using several
-methods: free-energy perturbation (FEP), finite-difference
+methods, such as free-energy perturbation (FEP), finite-difference
 thermodynamic integration (FDTI) or Bennet's acceptance ratio method
 (BAR).
 </P>
@@ -101,11 +100,11 @@ perturbation method using a very small &delta;:
 adapt</A> command can be used to define the stages of
 &lambda; at which the derivative is calculated and averaged.
 </P>
-<P>The compute fep calculates the exponential term and also the potential
-energy difference <I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>. By choosing a very
-small perturbation &delta; the thermodynamic integration method can be
-implemented using a numerical evaluation of the derivative of the
-potential energy with respect to &lambda;:
+<P>The compute fep calculates the exponential Boltzmann term and also the
+potential energy difference <I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>. By
+choosing a very small perturbation &delta; the thermodynamic
+integration method can be implemented using a numerical evaluation of
+the derivative of the potential energy with respect to &lambda;:
 </P>
 <CENTER><IMG SRC = "Eqs/compute_fep_ti.jpg">
 </CENTER>
@@ -148,8 +147,10 @@ the meaning of these parameters:
 </P>
 <DIV ALIGN=center><TABLE  BORDER=1 >
 <TR><TD ><A HREF = "pair_born.html">born</A></TD><TD > a,b,c</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_buck.html">buck</A></TD><TD > a,c</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs 
+<TR><TD ><A HREF = "pair_buck.html">buck</A></TD><TD > a,c </TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj.html">lj/cut/coul/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj.html">lj/cut/coul/long</A></TD><TD > epsilon,sigma</TD><TD > type pairs 
 </TD></TR></TABLE></DIV>
 
 <P>Note that it is easy to add new potentials and their parameters to
@@ -201,38 +202,39 @@ activated via the <A HREF = "pair_modify.html">pair_modify</A> command. If the
 perturbation is small, the tail contribution to the energy difference
 between the reference and perturbed systems should be negligible.
 </P>
+<P>If the keyword <I>volume</I> = <I>yes</I>, then the Boltzmann term is multiplied
+by the volume so that correct ensemble averaging can be performed over
+trajectories during which the volume fluctuates or changes <A HREF = "#AllenTildesley">(Allen and
+Tildesley)</A>:
+</P>
+<CENTER><IMG SRC = "Eqs/compute_fep_vol.jpg">
+</CENTER>
 <HR>
 
 <P><B>Output info:</B>
 </P>
 <P>This compute calculates a global vector of length 3 which contains the
-energy difference (<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>) as c_ID[1],
-the Boltzmann factor exp(-(<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>)/<I>kT</I>)
-as c_ID[2] and the volume of the simulation box <I>V</I> as
-c_ID[3]. <I>U</I><sub>1</sub> is the pair potential energy obtained with
-the perturbed parameters and <I>U</I><sub>0</sub> is the pair potential
-energy obtained with the unperturbed parameters. These energies
-include kspace terms if these are used in the simulation.
+energy difference (<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>) as c_ID[1], the
+Boltzmann factor exp(-(<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>)/<I>kT</I>), or
+<I>V</I>exp(-(<I>U</I><sub>1</sub>-<I>U</I><sub>0</sub>)/<I>kT</I>), as c_ID[2] and the
+volume of the simulation box <I>V</I> as c_ID[3]. <I>U</I><sub>1</sub> is the
+pair potential energy obtained with the perturbed parameters and
+<I>U</I><sub>0</sub> is the pair potential energy obtained with the
+unperturbed parameters. The energies include kspace terms if these
+are used in the simulation.
 </P>
-<P>If the keyword <I>volume</I> = <I>yes</I>, then the Boltzmann factor is
-multiplied by the volume so that correct ensemble averaging can be
-performed over trajectories during which the volume fluctuates or
-changes <A HREF = "#AllenTildesley">(Allen and Tildesley)</A>:
-</P>
-<CENTER><IMG SRC = "Eqs/compute_fep_vol.jpg">
-</CENTER>
 <P>These output results can be used by any command that uses a global
 scalar or vector from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
 15</A> for an overview of LAMMPS output
 options. For example, the computed values can be averaged using <A HREF = "fix_ave_time.html">fix
-ave/time</A> to calculate the free-energy differences.
+ave/time</A>.
 </P>
 <P>The values calculated by this compute are "extensive".
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>This compute is part of the MISC package.  It is only enabled if LAMMPS
-was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
+<P>This compute is part of the MISC/USER-MISC package.  It is only
+enabled if LAMMPS was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
 LAMMPS</A> section for more info.
 </P>
 <P><B>Related commands:</B>

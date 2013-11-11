@@ -12,10 +12,10 @@ compute fep command :h3
 
 compute ID group-ID fep temp attribute args ... keyword value ... :pre
 
-ID, group-ID are documented in "compute"_compute.html command :ulb,l
+ID, group-ID are documented in the "compute"_compute.html command :ulb,l
 fep = name of this compute command :l
 temp = external temperature (as specified for constant-temperature run) :l
-one or more attribute with args may be appended :l
+one or more attributes with args may be appended :l
 attribute = {pair} or {atom} :l
   {pair} args = pstyle pparam I J v_delta
     pstyle = pair style name, e.g. lj/cut
@@ -33,13 +33,12 @@ keyword = {tail} or {volume} :l
     {yes} = include tail correction to pair energies
   {volume} value = {no} or {yes}
     {no} = ignore volume changes (e.g. in {NVE} or {NVT} trajectories)
-    {yes} = include volume fluctuations (e.g. in {NpT} trajectories) :pre
+    {yes} = include volume changes (e.g. in {NpT} trajectories) :pre
 :ule
 
 [Examples:]
 
-compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut
-sigma 1 * v_delta volume yes
+compute 1 all fep 298 pair lj/cut epsilon 1 * v_delta pair lj/cut sigma 1 * v_delta volume yes
 compute 1 all fep 300 atom charge 2 v_delta :pre
 
 
@@ -49,7 +48,7 @@ Apply a perturbation to parameters of the interaction potential and
 recalculate the pair potential energy without changing the atomic
 coordinates from those of the reference, unperturbed system. This
 compute can be used to calculate free energy differences using several
-methods: free-energy perturbation (FEP), finite-difference
+methods, such as free-energy perturbation (FEP), finite-difference
 thermodynamic integration (FDTI) or Bennet's acceptance ratio method
 (BAR).
 
@@ -90,11 +89,11 @@ where {w}<sub>i</sub> are weights of a numerical quadrature. The "fix
 adapt"_fix_adapt.html command can be used to define the stages of
 &lambda; at which the derivative is calculated and averaged.
 
-The compute fep calculates the exponential term and also the potential
-energy difference {U}<sub>1</sub>-{U}<sub>0</sub>. By choosing a very
-small perturbation &delta; the thermodynamic integration method can be
-implemented using a numerical evaluation of the derivative of the
-potential energy with respect to &lambda;:
+The compute fep calculates the exponential Boltzmann term and also the
+potential energy difference {U}<sub>1</sub>-{U}<sub>0</sub>. By
+choosing a very small perturbation &delta; the thermodynamic
+integration method can be implemented using a numerical evaluation of
+the derivative of the potential energy with respect to &lambda;:
 
 :c,image(Eqs/compute_fep_ti.jpg)
 
@@ -136,8 +135,10 @@ the doc pages for individual pair styles and their energy formulas for
 the meaning of these parameters:
 
 "born"_pair_born.html: a,b,c: type pairs:
-"buck"_pair_buck.html: a,c: type pairs:
-"lj/cut"_pair_lj.html: epsilon,sigma: type pairs :tb(c=3,s=:)
+"buck"_pair_buck.html: a,c : type pairs:
+"lj/cut"_pair_lj.html: epsilon,sigma: type pairs:
+"lj/cut/coul/cut"_pair_lj.html: epsilon,sigma: type pairs:
+"lj/cut/coul/long"_pair_lj.html: epsilon,sigma: type pairs :tb(c=3,s=:)
 
 Note that it is easy to add new potentials and their parameters to
 this list.  All it typically takes is adding an extract() method to
@@ -188,39 +189,41 @@ activated via the "pair_modify"_pair_modify.html command. If the
 perturbation is small, the tail contribution to the energy difference
 between the reference and perturbed systems should be negligible.
 
+If the keyword {volume} = {yes}, then the Boltzmann term is multiplied
+by the volume so that correct ensemble averaging can be performed over
+trajectories during which the volume fluctuates or changes "(Allen and
+Tildesley)"_#AllenTildesley:
+
+:c,image(Eqs/compute_fep_vol.jpg)
+
+
 :line
 
 [Output info:]
 
 This compute calculates a global vector of length 3 which contains the
-energy difference ({U}<sub>1</sub>-{U}<sub>0</sub>) as c_ID\[1\],
-the Boltzmann factor exp(-({U}<sub>1</sub>-{U}<sub>0</sub>)/{kT})
-as c_ID\[2\] and the volume of the simulation box {V} as
-c_ID\[3\]. {U}<sub>1</sub> is the pair potential energy obtained with
-the perturbed parameters and {U}<sub>0</sub> is the pair potential
-energy obtained with the unperturbed parameters. These energies
-include kspace terms if these are used in the simulation.
-
-If the keyword {volume} = {yes}, then the Boltzmann factor is
-multiplied by the volume so that correct ensemble averaging can be
-performed over trajectories during which the volume fluctuates or
-changes "(Allen and Tildesley)"_#AllenTildesley:
-
-:c,image(Eqs/compute_fep_vol.jpg)
+energy difference ({U}<sub>1</sub>-{U}<sub>0</sub>) as c_ID\[1\], the
+Boltzmann factor exp(-({U}<sub>1</sub>-{U}<sub>0</sub>)/{kT}), or
+{V}exp(-({U}<sub>1</sub>-{U}<sub>0</sub>)/{kT}), as c_ID\[2\] and the
+volume of the simulation box {V} as c_ID\[3\]. {U}<sub>1</sub> is the
+pair potential energy obtained with the perturbed parameters and
+{U}<sub>0</sub> is the pair potential energy obtained with the
+unperturbed parameters. The energies include kspace terms if these
+are used in the simulation.
 
 These output results can be used by any command that uses a global
 scalar or vector from a compute as input.  See "Section_howto
 15"_Section_howto.html#howto_15 for an overview of LAMMPS output
 options. For example, the computed values can be averaged using "fix
-ave/time"_fix_ave_time.html to calculate the free-energy differences.
+ave/time"_fix_ave_time.html.
 
 The values calculated by this compute are "extensive".
 
 
 [Restrictions:]
 
-This compute is part of the MISC package.  It is only enabled if LAMMPS
-was built with that package.  See the "Making
+This compute is part of the MISC/USER-MISC package.  It is only
+enabled if LAMMPS was built with that package.  See the "Making
 LAMMPS"_Section_start.html#start_3 section for more info.
 
 [Related commands:]
