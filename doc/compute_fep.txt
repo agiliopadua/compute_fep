@@ -134,11 +134,12 @@ pair styles and parameters that can be used with this compute.  See
 the doc pages for individual pair styles and their energy formulas for
 the meaning of these parameters:
 
-"born"_pair_born.html: a,b,c: type pairs:
-"buck"_pair_buck.html: a,c : type pairs:
 "lj/cut"_pair_lj.html: epsilon,sigma: type pairs:
 "lj/cut/coul/cut"_pair_lj.html: epsilon,sigma: type pairs:
-"lj/cut/coul/long"_pair_lj.html: epsilon,sigma: type pairs :tb(c=3,s=:)
+"lj/cut/coul/long"_pair_lj.html: epsilon,sigma: type pairs:
+"lj/soft/coul/soft"_pair_lj_soft_coul_soft.html: epsilon,sigma,lambda: type pairs:
+"born"_pair_born.html: a,b,c: type pairs:
+"buck"_pair_buck.html: a,c : type pairs :tb(c=3,s=:)
 
 Note that it is easy to add new potentials and their parameters to
 this list.  All it typically takes is adding an extract() method to
