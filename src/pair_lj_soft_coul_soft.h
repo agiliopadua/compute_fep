@@ -13,28 +13,26 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(ljcap/cut/coul/long,PairLJCapCutCoulLong)
+PairStyle(lj/soft/coul/soft,PairLJSoftCoulSoft)
 
 #else
 
-#ifndef LMP_PAIR_LJCAP_CUT_COUL_LONG_H
-#define LMP_PAIR_LJCAP_CUT_COUL_LONG_H
+#ifndef LMP_PAIR_LJ_SOFT_COUL_SOFT_H
+#define LMP_PAIR_LJ_SOFT_COUL_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairLJCapCutCoulLong : public Pair {
-
+class PairLJSoftCoulSoft : public Pair {
  public:
-  PairLJCapCutCoulLong(class LAMMPS *);
-  virtual ~PairLJCapCutCoulLong();
+  PairLJSoftCoulSoft(class LAMMPS *);
+  virtual ~PairLJSoftCoulSoft();
   virtual void compute(int, int);
   virtual void settings(int, char **);
   void coeff(int, char **);
-  virtual void init_style();
-  void init_list(int, class NeighList *);
-  virtual double init_one(int, int);
+  void init_style();
+  double init_one(int, int);
   void write_restart(FILE *);
   void read_restart(FILE *);
   virtual void write_restart_settings(FILE *);
@@ -42,21 +40,16 @@ class PairLJCapCutCoulLong : public Pair {
   void write_data(FILE *);
   void write_data_all(FILE *);
   virtual double single(int, int, int, int, double, double, double, double &);
-
-  void compute_inner();
-  void compute_middle();
-  virtual void compute_outer(int, int);
-  virtual void *extract(const char *, int &);
+  void *extract(const char *, int &);
 
  protected:
-  double cut_lj_global;
+  double cut_lj_global,cut_coul_global;
   double **cut_lj,**cut_ljsq;
-  double cut_coul,cut_coulsq;
-  double **epsilon,**sigma;
+  double **cut_coul,**cut_coulsq;
+  double **epsilon,**sigma, **lambda;
   double **lj1,**lj2,**lj3,**lj4,**offset;
-  double *cut_respa;
-  double qdist;             // TIP4P distance from O site to negative charge
-  double g_ewald;
+
+  double nlj, alphalj, alphac;
 
   void allocate();
 };
@@ -78,17 +71,8 @@ E: Incorrect args for pair coefficients
 
 Self-explanatory.  Check the input script or data file.
 
-E: Pair style lj/cut/coul/long requires atom attribute q
+E: Pair style lj/cut/coul/cut requires atom attribute q
 
 The atom style defined does not have this attribute.
-
-E: Pair style requires a KSpace style
-
-No kspace style is defined.
-
-E: Pair cutoff < Respa interior cutoff
-
-One or more pairwise cutoffs are too short to use with the specified
-rRESPA cutoffs.
 
 */
