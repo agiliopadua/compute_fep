@@ -1,4 +1,4 @@
-/* -*- c++ -*- ----------------------------------------------------------
+/* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -13,21 +13,21 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(lj/soft/coul/soft,PairLJSoftCoulSoft)
+PairStyle(lj/soft,PairLJSoft)
 
 #else
 
-#ifndef LMP_PAIR_LJ_SOFT_COUL_SOFT_H
-#define LMP_PAIR_LJ_SOFT_COUL_SOFT_H
+#ifndef LMP_PAIR_LJ_SOFT_H
+#define LMP_PAIR_LJ_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairLJSoftCoulSoft : public Pair {
+class PairLJSoft : public Pair {
  public:
-  PairLJSoftCoulSoft(class LAMMPS *);
-  virtual ~PairLJSoftCoulSoft();
+  PairLJSoft(class LAMMPS *);
+  virtual ~PairLJSoft();
   virtual void compute(int, int);
   virtual void settings(int, char **);
   void coeff(int, char **);
@@ -43,12 +43,11 @@ class PairLJSoftCoulSoft : public Pair {
   void *extract(const char *, int &);
 
  protected:
-  double cut_lj_global,cut_coul_global;
-  double **cut_lj,**cut_ljsq;
-  double **cut_coul,**cut_coulsq;
+  double cut_global;
+  double **cut;
   double **epsilon,**sigma, **lambda;
   double nlambda, alphalj, alphac;
-  double **lj1,**lj2,**lj3,**lj4,**offset;
+  double **lj1,**lj2,**lj3,**offset;
 
   void allocate();
 };
@@ -70,13 +69,8 @@ E: Incorrect args for pair coefficients
 
 Self-explanatory.  Check the input script or data file.
 
-E: Pair style lj/soft/coul/soft requires atom attribute q
-
-The atom style defined does not have this attribute.
-
-E: Pair lj/soft/coul/soft different lambda values in mix
+E: Pair lj/soft different lambda values in mix
 
 The value of lambda has to be the same for I J pairs.
-
 
 */
