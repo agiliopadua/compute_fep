@@ -138,6 +138,8 @@ the meaning of these parameters:
 "lj/cut/coul/cut"_pair_lj.html: epsilon,sigma: type pairs:
 "lj/cut/coul/long"_pair_lj.html: epsilon,sigma: type pairs:
 "lj/soft/coul/soft"_pair_lj_soft_coul_soft.html: epsilon,sigma,lambda: type pairs:
+"lj/soft"_pair_lj_soft_coul_soft.html: epsilon,sigma,lambda: type pairs:
+"coul/soft"_pair_lj_soft_coul_soft.html: lambda: type pairs:
 "born"_pair_born.html: a,b,c: type pairs:
 "buck"_pair_buck.html: a,c : type pairs :tb(c=3,s=:)
 
@@ -229,7 +231,8 @@ LAMMPS"_Section_start.html#start_3 section for more info.
 
 [Related commands:]
 
-"fix adapt"_fix_adapt.html, "fix ave/time"_fix_ave_time.html
+"fix adapt"_fix_adapt.html, "fix ave/time"_fix_ave_time.html,
+"pair_lj_soft_coul_soft"_pair_lj_soft_coul_soft.txt
 
 [Default:]
 
