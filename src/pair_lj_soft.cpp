@@ -64,7 +64,7 @@ void PairLJSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r2inv,r6inv,forcelj,factor_lj;
+  double rsq,forcelj,factor_lj;
   double denlj, r6sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
@@ -107,14 +107,13 @@ void PairLJSoft::compute(int eflag, int vflag)
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-        r2inv = 1.0/rsq;
 
         r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
         denlj = lj3[itype][jtype] + r6sig6;
         forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
           (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
 
-        fpair = factor_lj*forcelj*r2inv;
+        fpair = factor_lj*forcelj/rsq;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -408,16 +407,14 @@ double PairLJSoft::single(int i, int j, int itype, int jtype, double rsq,
                          double factor_coul, double factor_lj,
                          double &fforce)
 {
-  double r2inv,forcelj,philj;
+  double forcelj,philj;
   double denlj, r6sig6;
-
-  r2inv = 1.0/rsq;
 
   r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
   denlj = lj3[itype][jtype] + r6sig6;
   forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
     (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
-  fforce = factor_lj*forcelj*r2inv;
+  fforce = factor_lj*forcelj/rsq;
 
   philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
     (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];

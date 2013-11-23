@@ -55,7 +55,7 @@ void PairCoulSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,ecoul,fpair;
-  double rsq,r2inv,rinv,forcecoul,factor_coul;
+  double rsq,forcecoul,factor_coul;
   double denc;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
@@ -101,14 +101,12 @@ void PairCoulSoft::compute(int eflag, int vflag)
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-        r2inv = 1.0/rsq;
-        rinv = sqrt(r2inv);
 
         denc = sqrt(lj4[itype][jtype] + rsq);
         forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
           (denc*denc*denc);
 
-        fpair = factor_coul*forcecoul * r2inv;
+        fpair = factor_coul*forcecoul / rsq;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -349,15 +347,13 @@ double PairCoulSoft::single(int i, int j, int itype, int jtype,
                            double rsq, double factor_coul, double factor_lj,
                            double &fforce)
 {
-  double r2inv,forcecoul,phicoul;
+  double forcecoul,phicoul;
   double denc;
-
-  r2inv = 1.0/rsq;
 
   denc = sqrt(lj4[itype][jtype] + rsq);
   forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
     (denc*denc*denc);
-  fforce = factor_coul*forcecoul * r2inv;
+  fforce = factor_coul*forcecoul / rsq;
 
   phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
   return factor_coul*phicoul;

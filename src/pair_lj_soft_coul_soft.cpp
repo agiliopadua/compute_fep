@@ -68,7 +68,7 @@ void PairLJSoftCoulSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
-  double rsq,r2inv,forcecoul,forcelj,factor_coul,factor_lj;
+  double rsq,forcecoul,forcelj,factor_coul,factor_lj;
   double denc, denlj, r6sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
@@ -116,7 +116,6 @@ void PairLJSoftCoulSoft::compute(int eflag, int vflag)
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-        r2inv = 1.0/rsq;
 
         if (rsq < cut_coulsq[itype][jtype]) {
             denc = sqrt(lj4[itype][jtype] + rsq);
@@ -131,7 +130,7 @@ void PairLJSoftCoulSoft::compute(int eflag, int vflag)
             (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
         } else forcelj = 0.0;
 
-        fpair = (factor_coul*forcecoul + factor_lj*forcelj) * r2inv;
+        fpair = (factor_coul*forcecoul + factor_lj*forcelj)/rsq;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -468,10 +467,9 @@ double PairLJSoftCoulSoft::single(int i, int j, int itype, int jtype,
                                   double factor_coul, double factor_lj,
                                   double &fforce)
 {
-  double r2inv,forcecoul,forcelj,phicoul,philj;
+  double forcecoul,forcelj,phicoul,philj;
   double denc, denlj, r6sig6;
 
-  r2inv = 1.0/rsq;
   if (rsq < cut_coulsq[itype][jtype]) {
     denc = sqrt(lj4[itype][jtype] + rsq);
     forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
@@ -483,7 +481,7 @@ double PairLJSoftCoulSoft::single(int i, int j, int itype, int jtype,
     forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
       (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
   } else forcelj = 0.0;
-  fforce = (factor_coul*forcecoul + factor_lj*forcelj) * r2inv;
+  fforce = (factor_coul*forcecoul + factor_lj*forcelj)/rsq;
 
   double eng = 0.0;
   if (rsq < cut_coulsq[itype][jtype]) {
