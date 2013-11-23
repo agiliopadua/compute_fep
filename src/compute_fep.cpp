@@ -256,7 +256,7 @@ void ComputeFEP::init()
       }
     }
     if (logfile) {
-      fprintf(logfile, "FEP settings ...");
+      fprintf(logfile, "FEP settings ...\n");
       fprintf(logfile, "  temperature = %f\n", temp_fep);
       fprintf(logfile, "  tail %s\n", (tailflag ? "yes":"no"));
       for (int m = 0; m < npert; m++) {
