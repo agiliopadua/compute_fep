@@ -213,10 +213,10 @@ void PairCoulSoft::init_style()
   if (!atom->q_flag)
     error->all(FLERR,"Pair style coul/soft requires atom attribute q");
 
+  neighbor->request(this);
+
   nlambda = 2;
   alphac = 10.0 * force->angstrom * force->angstrom;
-
-  neighbor->request(this);
 }
 
 /* ----------------------------------------------------------------------
@@ -226,15 +226,16 @@ void PairCoulSoft::init_style()
 double PairCoulSoft::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
-    cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
     if (lambda[i][i] != lambda[j][j])
       error->all(FLERR,"Pair coul/soft different lambda values in mix");
     lambda[i][j] = lambda[i][i];
+    cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
   lj4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
+  cut[j][i] = cut[i][j];
   lambda[j][i] = lambda[i][j];
   lj1[j][i] = lj1[i][j];
   lj4[j][i] = lj4[i][j];
@@ -293,9 +294,10 @@ void PairCoulSoft::read_restart(FILE *fp)
 
 void PairCoulSoft::write_restart_settings(FILE *fp)
 {
-  fwrite(&cut_global,sizeof(double),1,fp);
   fwrite(&nlambda,sizeof(double),1,fp);
   fwrite(&alphac,sizeof(double),1,fp);
+
+  fwrite(&cut_global,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
 }
@@ -307,15 +309,17 @@ void PairCoulSoft::write_restart_settings(FILE *fp)
 void PairCoulSoft::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
-    fread(&cut_global,sizeof(double),1,fp);
     fread(&nlambda,sizeof(double),1,fp);
     fread(&alphac,sizeof(double),1,fp);
+
+    fread(&cut_global,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
   }
-  MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&nlambda,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&alphac,1,MPI_DOUBLE,0,world);
+
+  MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
 }
@@ -350,12 +354,16 @@ double PairCoulSoft::single(int i, int j, int itype, int jtype,
   double forcecoul,phicoul;
   double denc;
 
-  denc = sqrt(lj4[itype][jtype] + rsq);
-  forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
-    (denc*denc*denc);
+  if (rsq < cutsq[itype][jtype]) {
+    denc = sqrt(lj4[itype][jtype] + rsq);
+    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
+      (denc*denc*denc);
+  } else forcecoul = 0.0; 
   fforce = factor_coul*forcecoul / rsq;
 
-  phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
+  if (rsq < cutsq[itype][jtype])
+    phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
+  else phicoul = 0.0;
   return factor_coul*phicoul;
 }
 

@@ -7,6 +7,7 @@
 :line
 
 pair_style lj/soft/coul/soft command :h3
+pair_style lj/soft/tip4p/soft command :h3
 pair_style lj/soft command :h3
 pair_style coul/soft command :h3
 
@@ -15,9 +16,18 @@ pair_style coul/soft command :h3
 
 pair_style style args :pre
 
-style = {lj/soft/coul/soft} or {lj/soft} or {coul/soft}
+style = {lj/soft/coul/soft} or {lj/soft/coul/soft} or {lj/soft} or {coul/soft}
 args = list of arguments for a particular style :ul
   {lj/soft/coul/soft} args = cutoff (cutoff2)
+    cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
+    cutoff2 = global cutoff for Coulombic (optional) (distance units)
+  {lj/soft/tip4p/soft} args = otype htype btype atype qdist cutoff (cutoff2)
+    otype,htype = atom types for TIP4P O and H
+    btype,atype = bond and angle types for TIP4P waters
+    qdist = distance from O atom to massless charge (distance units)
+    cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
+    cutoff2 = global cutoff for Coulombic (optional) (distance units)
+  {lj/soft/tip4p/soft} args = cutoff (cutoff2)
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/soft} args = cutoff
@@ -34,6 +44,11 @@ pair_coeff * * 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 0.0 10.0
 pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 :pre
+
+pair_style lj/cut/tip4p/cut 1 2 7 8 0.15 10.3
+pair_style lj/cut/tip4p/cut 1 2 7 8 0.15 10.3 10.0
+pair_coeff * * 0.155 3.1536 1.0
+pair_coeff 1 1 0.155 3.1536 1.0 9.0 :pre
 
 pair_style lj/soft 10.0
 pair_coeff * * 0.28 3.1 1.0
@@ -73,6 +88,12 @@ appropriate choice.
 If one cutoff is specified in the pair_style command, it is used for
 both the LJ and Coulombic terms.  If two cutoffs are specified, they
 are used as cutoffs for the LJ and Coulombic terms respectively.
+
+The {cut/soft/tip4p/soft} implements a soft-core version of the TIP4P
+water model. It's usage is documented in the "pair_lj"_pair_lj.html
+styles. This soft-core version adds the lambda parameter to the list
+of arguments, after epsilon and sigma in the
+"pair_coeff"_pair_coeff.html command.
 
 The {cut/soft} substyle is designed to be combined with other pair
 potentials via the "pair_style hybrid/overlay"_pair_hybrid.html
@@ -114,7 +135,6 @@ alpha_C = 10 Angstrom^2 "(Beutler)"_#Beutler. To change these
 recompilation is required.
 
 :line
-
 
 [Mixing, shift, tail correction, restart info]:
 

@@ -227,10 +227,10 @@ void PairLJSoft::coeff(int narg, char **arg)
 
 void PairLJSoft::init_style()
 {
+  neighbor->request(this);
+
   nlambda = 2;
   alphalj = 0.5;
-
-  neighbor->request(this);
 }
 
 /* ----------------------------------------------------------------------
@@ -249,13 +249,15 @@ double PairLJSoft::init_one(int i, int j)
     cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
 
+  double sig2 = sigma[i][j]*sigma[i][j];
   lj1[i][j] = pow(lambda[i][j], nlambda);
-  lj2[i][j] = pow(sigma[i][j], 6.0);
+  lj2[i][j] = sig2*sig2*sig2;
   lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   if (offset_flag) {
-    double ratio = sigma[i][j] / cut[i][j];
-    offset[i][j] = 4.0 * epsilon[i][j] * (pow(ratio,12.0) - pow(ratio,6.0));
+    double r2sig2 = (sigma[i][j] / cut[i][j]) * (sigma[i][j] / cut[i][j]);
+    double denlj = lj3[i][j] + r2sig2*r2sig2*r2sig2;
+    offset[i][j] = lj1[i][j] * 4.0 * epsilon[i][j] * (1.0/(denlj*denlj) - 1.0/denlj);
   } else offset[i][j] = 0.0;
 
   epsilon[j][i] = epsilon[i][j];
@@ -286,9 +288,9 @@ double PairLJSoft::init_one(int i, int j)
     double rc3 = cut[i][j]*cut[i][j]*cut[i][j];
     double rc6 = rc3*rc3;
     double rc9 = rc3*rc6;
-    etail_ij = 8.0*MY_PI*all[0]*all[1]*epsilon[i][j] *
+    etail_ij = 8.0*MY_PI*all[0]*all[1] * lj1[i][j] * epsilon[i][j] *
       sig6 * (sig6 - 3.0*rc6) / (9.0*rc9);
-    ptail_ij = 16.0*MY_PI*all[0]*all[1]*epsilon[i][j] *
+    ptail_ij = 16.0*MY_PI*all[0]*all[1] * lj1[i][j] * epsilon[i][j] *
       sig6 * (2.0*sig6 - 3.0*rc6) / (9.0*rc9);
   }
 
@@ -352,9 +354,10 @@ void PairLJSoft::read_restart(FILE *fp)
 
 void PairLJSoft::write_restart_settings(FILE *fp)
 {
-  fwrite(&cut_global,sizeof(double),1,fp);
   fwrite(&nlambda,sizeof(double),1,fp);
   fwrite(&alphalj,sizeof(double),1,fp);
+
+  fwrite(&cut_global,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
   fwrite(&tail_flag,sizeof(int),1,fp);
@@ -368,11 +371,17 @@ void PairLJSoft::read_restart_settings(FILE *fp)
 {
   int me = comm->me;
   if (me == 0) {
+    fread(&nlambda,sizeof(double),1,fp);
+    fread(&alphalj,sizeof(double),1,fp);
+
     fread(&cut_global,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
     fread(&tail_flag,sizeof(int),1,fp);
   }
+  MPI_Bcast(&nlambda,1,MPI_DOUBLE,0,world);
+  MPI_Bcast(&alphalj,1,MPI_DOUBLE,0,world);
+
   MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
@@ -408,16 +417,20 @@ double PairLJSoft::single(int i, int j, int itype, int jtype, double rsq,
                          double &fforce)
 {
   double forcelj,philj;
-  double denlj, r6sig6;
+  double r6sig6, denlj;
 
-  r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-  denlj = lj3[itype][jtype] + r6sig6;
-  forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-    (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+  if (rsq < cutsq[itype][jtype]) {
+    r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
+    denlj = lj3[itype][jtype] + r6sig6;
+    forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
+      (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+  } else forcelj = 0.0;
   fforce = factor_lj*forcelj/rsq;
 
-  philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
-    (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];
+  if (rsq < cutsq[itype][jtype]) {
+    philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
+      (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];
+  } else philj = 0.0;
 
   return factor_lj*philj;
 }
