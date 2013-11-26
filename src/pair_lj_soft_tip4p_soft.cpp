@@ -34,6 +34,8 @@
 using namespace LAMMPS_NS; 
 using namespace MathConst;
 
+#define EPSZERO
+
 /* ---------------------------------------------------------------------- */
 
 PairLJSoftTIP4PSoft::PairLJSoftTIP4PSoft(LAMMPS *lmp) : Pair(lmp)
@@ -456,6 +458,12 @@ void PairLJSoftTIP4PSoft::coeff(int narg, char **arg)
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
   double epsilon_one = force->numeric(FLERR,arg[2]);
+#ifdef EPSZERO
+  // in some machines source of numerical precision issues in ::init_one()
+  // when checking that LJ epsilon = 0.0 for water H
+  if (fabs(epsilon_one) < 1.0e-60)
+      epsilon_one = 0.0;
+#endif
   double sigma_one = force->numeric(FLERR,arg[3]);
   double lambda_one = force->numeric(FLERR,arg[4]);
 
