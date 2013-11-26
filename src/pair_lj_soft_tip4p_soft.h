@@ -87,15 +87,15 @@ E: Incorrect args for pair coefficients
 
 UNDOCUMENTED
 
-E: Pair style lj/cut/tip4p/cut requires atom IDs
+E: Pair style lj/soft/tip4p/soft requires atom IDs
 
 UNDOCUMENTED
 
-E: Pair style lj/cut/tip4p/cut requires newton pair on
+E: Pair style lj/soft/tip4p/soft requires newton pair on
 
 UNDOCUMENTED
 
-E: Pair style lj/cut/tip4p/cut requires atom attribute q
+E: Pair style lj/soft/tip4p/soft requires atom attribute q
 
 UNDOCUMENTED
 
@@ -107,7 +107,7 @@ E: Must use an angle style with TIP4P potential
 
 UNDOCUMENTED
 
-E: Water H epsilon must be 0.0 for pair style lj/cut/tip4p/cut
+E: Water H epsilon must be 0.0 for pair style lj/soft/tip4p/soft
 
 UNDOCUMENTED
 

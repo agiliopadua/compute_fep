@@ -262,7 +262,7 @@ void PairLJSoftCoulSoft::coeff(int narg, char **arg)
 void PairLJSoftCoulSoft::init_style()
 {
   if (!atom->q_flag)
-    error->all(FLERR,"Pair style ljsoft/cut/coul/cut requires atom attribute q");
+    error->all(FLERR,"Pair style lj/soft/coul/soft requires atom attribute q");
 
   neighbor->request(this);
 
