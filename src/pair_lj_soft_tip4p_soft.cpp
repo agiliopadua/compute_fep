@@ -458,12 +458,6 @@ void PairLJSoftTIP4PSoft::coeff(int narg, char **arg)
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
   double epsilon_one = force->numeric(FLERR,arg[2]);
-#ifdef EPSZERO
-  // in some machines source of numerical precision issues in ::init_one()
-  // when checking that LJ epsilon = 0.0 for water H
-  if (fabs(epsilon_one) < 1.0e-60)
-      epsilon_one = 0.0;
-#endif
   double sigma_one = force->numeric(FLERR,arg[3]);
   double lambda_one = force->numeric(FLERR,arg[4]);
 
@@ -590,6 +584,15 @@ double PairLJSoftTIP4PSoft::init_one(int i, int j)
   // set LJ cutoff to 0.0 for any interaction involving water H
   // so LJ term isn't calculated in compute()
   
+#ifdef EPSZERO
+  // in some machines source of numerical precision issues
+  // when checking that LJ epsilon = 0.0 for water H
+  if ((i == typeH && fabs(epsilon[i][i]) < 1.0e-30))
+      epsilon[i][i] = 0.0;
+  if ((j == typeH && fabs(epsilon[j][j]) < 1.0e-30))
+      epsilon[j][j] = 0.0;
+#endif
+
   if ((i == typeH && epsilon[i][i] != 0.0) ||
       (j == typeH && epsilon[j][j] != 0.0))
     error->all(FLERR,"Water H epsilon must be 0.0 for "
