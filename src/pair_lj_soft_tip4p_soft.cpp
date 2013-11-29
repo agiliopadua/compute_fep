@@ -34,7 +34,7 @@
 using namespace LAMMPS_NS; 
 using namespace MathConst;
 
-#define EPSZERO
+#undef EPSZERO
 
 /* ---------------------------------------------------------------------- */
 
