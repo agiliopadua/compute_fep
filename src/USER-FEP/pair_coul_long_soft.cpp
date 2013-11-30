@@ -126,13 +126,12 @@ void PairCoulLongSoft::compute(int eflag, int vflag)
         erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
 
         denc = sqrt(lj4[itype][jtype] + rsq);
-        prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
-          (denc*denc*denc);
+        prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
 
         forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
         if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
 
-        fpair = forcecoul / rsq;
+        fpair = forcecoul;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -365,14 +364,14 @@ double PairCoulLongSoft::single(int i, int j, int itype, int jtype,
     erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
     
     denc = sqrt(lj4[itype][jtype] + rsq);
-    prefactor = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
+    prefactor = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] /
       (denc*denc*denc);
 
     forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
     if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
   } else forcecoul = 0.0;
 
-  fforce = forcecoul / rsq;
+  fforce = forcecoul;
 
   if (rsq < cut_coulsq) {
     prefactor = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;

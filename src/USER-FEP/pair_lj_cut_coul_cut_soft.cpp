@@ -69,7 +69,7 @@ void PairLJCutCoulCutSoft::compute(int eflag, int vflag)
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
   double rsq,forcecoul,forcelj,factor_coul,factor_lj;
-  double denc, denlj, r6sig6;
+  double denc, denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = ecoul = 0.0;
@@ -119,18 +119,17 @@ void PairLJCutCoulCutSoft::compute(int eflag, int vflag)
 
         if (rsq < cut_coulsq[itype][jtype]) {
           denc = sqrt(lj4[itype][jtype] + rsq);
-          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
-            (denc*denc*denc);
+          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
         } else forcecoul = 0.0;
         
         if (rsq < cut_ljsq[itype][jtype]) {
-          r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-          denlj = lj3[itype][jtype] + r6sig6;
+          r4sig6 = rsq*rsq / lj2[itype][jtype];
+          denlj = lj3[itype][jtype] + rsq*r4sig6;
           forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-            (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+            (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
         } else forcelj = 0.0;
 
-        fpair = (factor_coul*forcecoul + factor_lj*forcelj)/rsq;
+        fpair = factor_coul*forcecoul + factor_lj*forcelj;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -474,20 +473,20 @@ double PairLJCutCoulCutSoft::single(int i, int j, int itype, int jtype,
                                   double &fforce)
 {
   double forcecoul,forcelj,phicoul,philj;
-  double denc, denlj, r6sig6;
+  double denc, denlj, r4sig6;
 
   if (rsq < cut_coulsq[itype][jtype]) {
     denc = sqrt(lj4[itype][jtype] + rsq);
-    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
+    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] /
       (denc*denc*denc);
   } else forcecoul = 0.0;
   if (rsq < cut_ljsq[itype][jtype]) {
-    r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-    denlj = lj3[itype][jtype] + r6sig6;
+    r4sig6 = rsq*rsq / lj2[itype][jtype];
+    denlj = lj3[itype][jtype] + rsq*r4sig6;
     forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-      (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+      (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
   } else forcelj = 0.0;
-  fforce = (factor_coul*forcecoul + factor_lj*forcelj)/rsq;
+  fforce = factor_coul*forcecoul + factor_lj*forcelj;
 
   double eng = 0.0;
   if (rsq < cut_coulsq[itype][jtype]) {

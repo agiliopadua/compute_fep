@@ -103,10 +103,9 @@ void PairCoulCutSoft::compute(int eflag, int vflag)
       if (rsq < cutsq[itype][jtype]) {
 
         denc = sqrt(lj4[itype][jtype] + rsq);
-        forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
-          (denc*denc*denc);
+        forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
 
-        fpair = factor_coul*forcecoul / rsq;
+        fpair = factor_coul*forcecoul;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -358,10 +357,10 @@ double PairCoulCutSoft::single(int i, int j, int itype, int jtype,
 
   if (rsq < cutsq[itype][jtype]) {
     denc = sqrt(lj4[itype][jtype] + rsq);
-    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
+    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] /
       (denc*denc*denc);
   } else forcecoul = 0.0; 
-  fforce = factor_coul*forcecoul / rsq;
+  fforce = factor_coul*forcecoul;
 
   if (rsq < cutsq[itype][jtype])
     phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;

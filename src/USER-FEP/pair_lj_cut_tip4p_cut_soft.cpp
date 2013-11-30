@@ -84,7 +84,7 @@ void PairLJCutTIP4PCutSoft::compute(int eflag, int vflag)
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul;
   double rsq,forcecoul,forcelj,factor_lj,factor_coul;
-  double denc, denlj, r6sig6;
+  double denc, denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   int key;
@@ -180,11 +180,11 @@ void PairLJCutTIP4PCutSoft::compute(int eflag, int vflag)
 
       if (rsq < cut_ljsq[itype][jtype]) {
 
-        r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-        denlj = lj3[itype][jtype] + r6sig6;
+        r4sig6 = rsq*rsq / lj2[itype][jtype];
+        denlj = lj3[itype][jtype] + rsq*r4sig6;
         forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-          (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
-        forcelj *= factor_lj / rsq;
+          (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
+        forcelj *= factor_lj;
 
         f[i][0] += delx*forcelj;
         f[i][1] += dely*forcelj;
@@ -244,9 +244,8 @@ void PairLJCutTIP4PCutSoft::compute(int eflag, int vflag)
         if (rsq < cut_coulsq) {
 
           denc = sqrt(lj4[itype][jtype] + rsq);
-          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
-            (denc*denc*denc);
-          cforce = factor_coul * forcecoul / rsq;
+          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] /v(denc*denc*denc);
+          cforce = factor_coul * forcecoul;
 
         // if i,j are not O atoms, force is applied directly;
         // if i or j are O atoms, force is on fictitious atom & partitioned

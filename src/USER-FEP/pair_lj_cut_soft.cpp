@@ -71,7 +71,7 @@ void PairLJCutSoft::compute(int eflag, int vflag)
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
   double rsq,forcelj,factor_lj;
-  double denlj, r6sig6;
+  double denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -114,12 +114,12 @@ void PairLJCutSoft::compute(int eflag, int vflag)
 
       if (rsq < cutsq[itype][jtype]) {
 
-        r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-        denlj = lj3[itype][jtype] + r6sig6;
+        r4sig6 = rsq*rsq / lj2[itype][jtype];
+        denlj = lj3[itype][jtype] + rsq*r4sig6;
         forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-          (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+          (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
 
-        fpair = factor_lj*forcelj/rsq;
+        fpair = factor_lj*forcelj;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -152,7 +152,7 @@ void PairLJCutSoft::compute_inner()
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,fpair;
   double rsq,forcelj,factor_lj,rsw;
-  double denlj, r6sig6;
+  double denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   double **x = atom->x;
@@ -198,12 +198,12 @@ void PairLJCutSoft::compute_inner()
       if (rsq < cut_out_off_sq) {
         jtype = type[j];
 
-        r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-        denlj = lj3[itype][jtype] + r6sig6;
+        r4sig6 = rsq*rsq / lj2[itype][jtype];
+        denlj = lj3[itype][jtype] + rsq*r4sig6;
         forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-          (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+          (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
 
-        fpair = factor_lj*forcelj/rsq;
+        fpair = factor_lj*forcelj;
 
         if (rsq > cut_out_on_sq) {
           rsw = (sqrt(rsq) - cut_out_on)/cut_out_diff;
@@ -230,7 +230,7 @@ void PairLJCutSoft::compute_middle()
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,fpair;
   double rsq,forcelj,factor_lj,rsw;
-  double denlj, r6sig6;
+  double denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   double **x = atom->x;
@@ -281,12 +281,12 @@ void PairLJCutSoft::compute_middle()
       if (rsq < cut_out_off_sq && rsq > cut_in_off_sq) {
         jtype = type[j];
 
-        r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-        denlj = lj3[itype][jtype] + r6sig6;
+        r4sig6 = rsq*rsq / lj2[itype][jtype];
+        denlj = lj3[itype][jtype] + rsq*r4sig6;
         forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-          (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+          (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
 
-        fpair = factor_lj*forcelj/rsq;
+        fpair = factor_lj*forcelj;
 
         if (rsq < cut_in_on_sq) {
           rsw = (sqrt(rsq) - cut_in_off)/cut_in_diff;
@@ -317,7 +317,7 @@ void PairLJCutSoft::compute_outer(int eflag, int vflag)
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
   double rsq,forcelj,factor_lj,rsw;
-  double denlj, r6sig6;
+  double denlj, r4sig6;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -368,12 +368,12 @@ void PairLJCutSoft::compute_outer(int eflag, int vflag)
       if (rsq < cutsq[itype][jtype]) {
         if (rsq > cut_in_off_sq) {
 
-          r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-          denlj = lj3[itype][jtype] + r6sig6;
+          r4sig6 = rsq*rsq / lj2[itype][jtype];
+          denlj = lj3[itype][jtype] + rsq*r4sig6;
           forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-            (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+            (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
 
-          fpair = factor_lj*forcelj/rsq;
+          fpair = factor_lj*forcelj;
 
           if (rsq < cut_in_on_sq) {
             rsw = (sqrt(rsq) - cut_in_off)/cut_in_diff;
@@ -398,13 +398,13 @@ void PairLJCutSoft::compute_outer(int eflag, int vflag)
 
         if (vflag) {
           if (rsq <= cut_in_off_sq) {
-            r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-            denlj = lj3[itype][jtype] + r6sig6;
+            r4sig6 = rsq*rsq / lj2[itype][jtype];
+            denlj = lj3[itype][jtype] + rsq*r4sig6;
             forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-              (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
-            fpair = factor_lj*forcelj/rsq;
+              (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
+            fpair = factor_lj*forcelj;
           } else if (rsq < cut_in_on_sq)
-            fpair = factor_lj*forcelj/rsq;
+            fpair = factor_lj*forcelj;
         }
 
         if (evflag) ev_tally(i,j,nlocal,newton_pair,
@@ -748,15 +748,15 @@ double PairLJCutSoft::single(int i, int j, int itype, int jtype, double rsq,
                          double &fforce)
 {
   double forcelj,philj;
-  double r6sig6, denlj;
+  double r4sig6, denlj;
 
   if (rsq < cutsq[itype][jtype]) {
-    r6sig6 = rsq*rsq*rsq / lj2[itype][jtype];
-    denlj = lj3[itype][jtype] + r6sig6;
+    r4sig6 = rsq*rsq / lj2[itype][jtype];
+    denlj = lj3[itype][jtype] + rsq*r4sig6;
     forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
-      (48.0*r6sig6/(denlj*denlj*denlj) - 24.0*r6sig6/(denlj*denlj));
+      (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
   } else forcelj = 0.0;
-  fforce = factor_lj*forcelj/rsq;
+  fforce = factor_lj*forcelj;
 
   if (rsq < cutsq[itype][jtype]) {
     philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
