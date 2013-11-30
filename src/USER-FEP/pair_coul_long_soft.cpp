@@ -47,6 +47,7 @@ using namespace LAMMPS_NS;
 PairCoulLongSoft::PairCoulLongSoft(LAMMPS *lmp) : Pair(lmp)
 {
   ewaldflag = pppmflag = 1;
+  qdist = 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -265,7 +266,7 @@ double PairCoulLongSoft::init_one(int i, int j)
   lj1[j][i] = lj1[i][j];
   lj4[j][i] = lj4[i][j];
 
-  return cut_coul;
+  return cut_coul+2.0*qdist;
 }
 
 /* ----------------------------------------------------------------------

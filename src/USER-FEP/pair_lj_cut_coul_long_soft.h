@@ -55,6 +55,7 @@ class PairLJCutCoulLongSoft : public Pair {
   double nlambda, alphalj, alphac;
   double **lj1,**lj2,**lj3,**lj4,**offset;
   double *cut_respa;
+  double qdist; // TIP4P distance O to negative charge (compatibility of cutoffs)
   double g_ewald;
 
   void allocate();

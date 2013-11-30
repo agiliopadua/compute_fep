@@ -53,6 +53,7 @@ PairLJCutCoulLongSoft::PairLJCutCoulLongSoft(LAMMPS *lmp) : Pair(lmp)
   ewaldflag = pppmflag = 1;
   respa_enable = 1;
   writedata = 1;
+  qdist = 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -710,7 +711,9 @@ double PairLJCutCoulLongSoft::init_one(int i, int j)
     cut_lj[i][j] = mix_distance(cut_lj[i][i],cut_lj[j][j]);
   }
 
-  double cut = MAX(cut_lj[i][j],cut_coul);
+  // include TIP4P qdist in full cutoff, qdist = 0.0 if not TIP4P
+
+  double cut = MAX(cut_lj[i][j],cut_coul+2.0*qdist);
   cut_ljsq[i][j] = cut_lj[i][j] * cut_lj[i][j];
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
