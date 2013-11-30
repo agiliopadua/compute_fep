@@ -13,21 +13,21 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(lj/soft,PairLJSoft)
+PairStyle(lj/cut/soft,PairLJCutSoft)
 
 #else
 
-#ifndef LMP_PAIR_LJ_SOFT_H
-#define LMP_PAIR_LJ_SOFT_H
+#ifndef LMP_PAIR_LJ_CUT_SOFT_H
+#define LMP_PAIR_LJ_CUT_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairLJSoft : public Pair {
+class PairLJCutSoft : public Pair {
  public:
-  PairLJSoft(class LAMMPS *);
-  virtual ~PairLJSoft();
+  PairLJCutSoft(class LAMMPS *);
+  virtual ~PairLJCutSoft();
   virtual void compute(int, int);
   virtual void settings(int, char **);
   void coeff(int, char **);

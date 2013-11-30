@@ -18,7 +18,7 @@
 
 #include "math.h"
 #include "stdlib.h"
-#include "pair_lj_soft_tip4p_soft.h"
+#include "pair_lj_cut_tip4p_cut_soft.h"
 #include "atom.h"
 #include "force.h"
 #include "neighbor.h"
@@ -38,7 +38,7 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJSoftTIP4PSoft::PairLJSoftTIP4PSoft(LAMMPS *lmp) : Pair(lmp)
+PairLJCutTIP4PCutSoft::PairLJCutTIP4PCutSoft(LAMMPS *lmp) : Pair(lmp)
 {
   single_enable = 0;
   writedata = 1;
@@ -55,7 +55,7 @@ PairLJSoftTIP4PSoft::PairLJSoftTIP4PSoft(LAMMPS *lmp) : Pair(lmp)
 
 /* ---------------------------------------------------------------------- */
 
-PairLJSoftTIP4PSoft::~PairLJSoftTIP4PSoft()
+PairLJCutTIP4PCutSoft::~PairLJCutTIP4PCutSoft()
 {
   if (allocated) {
     memory->destroy(setflag);
@@ -79,7 +79,7 @@ PairLJSoftTIP4PSoft::~PairLJSoftTIP4PSoft()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::compute(int eflag, int vflag)
+void PairLJCutTIP4PCutSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul;
@@ -390,7 +390,7 @@ void PairLJSoftTIP4PSoft::compute(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::allocate()
+void PairLJCutTIP4PCutSoft::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -418,7 +418,7 @@ void PairLJSoftTIP4PSoft::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::settings(int narg, char **arg)
+void PairLJCutTIP4PCutSoft::settings(int narg, char **arg)
 {
   if (narg < 6 || narg > 7) error->all(FLERR,"Illegal pair_style command");
 
@@ -447,7 +447,7 @@ void PairLJSoftTIP4PSoft::settings(int narg, char **arg)
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::coeff(int narg, char **arg)
+void PairLJCutTIP4PCutSoft::coeff(int narg, char **arg)
 {
   if (narg < 5 || narg > 6)
     error->all(FLERR,"Incorrect args for pair coefficients");
@@ -483,16 +483,16 @@ void PairLJSoftTIP4PSoft::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::init_style()
+void PairLJCutTIP4PCutSoft::init_style()
 {
   if (atom->tag_enable == 0)
-    error->all(FLERR,"Pair style lj/soft/tip4p/soft requires atom IDs");
+    error->all(FLERR,"Pair style lj/cut/tip4p/cut/soft requires atom IDs");
   if (!force->newton_pair)
     error->all(FLERR,
-               "Pair style lj/soft/tip4p/soft requires newton pair on");
+               "Pair style lj/cut/tip4p/cut/soft requires newton pair on");
   if (!atom->q_flag)
     error->all(FLERR,
-               "Pair style lj/soft/tip4p/soft requires atom attribute q");
+               "Pair style lj/cut/tip4p/cut/soft requires atom attribute q");
   if (force->bond == NULL)
     error->all(FLERR,"Must use a bond style with TIP4P potential");
   if (force->angle == NULL)
@@ -515,14 +515,14 @@ void PairLJSoftTIP4PSoft::init_style()
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairLJSoftTIP4PSoft::init_one(int i, int j)
+double PairLJCutTIP4PCutSoft::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
                                sigma[i][i],sigma[j][j]);
     sigma[i][j] = mix_distance(sigma[i][i],sigma[j][j]);
     if (lambda[i][i] != lambda[j][j])
-      error->all(FLERR,"Pair lj/soft/tip4p/soft different lambda values in mix");
+      error->all(FLERR,"Pair lj/cut/tip4p/cut/soft different lambda values in mix");
     lambda[i][j] = lambda[i][i];
     cut_lj[i][j] = mix_distance(cut_lj[i][i],cut_lj[j][j]);
   }
@@ -608,7 +608,7 @@ double PairLJSoftTIP4PSoft::init_one(int i, int j)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::write_restart(FILE *fp)
+void PairLJCutTIP4PCutSoft::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -630,7 +630,7 @@ void PairLJSoftTIP4PSoft::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::read_restart(FILE *fp)
+void PairLJCutTIP4PCutSoft::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
   allocate();
@@ -661,7 +661,7 @@ void PairLJSoftTIP4PSoft::read_restart(FILE *fp)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::write_restart_settings(FILE *fp)
+void PairLJCutTIP4PCutSoft::write_restart_settings(FILE *fp)
 {
   fwrite(&typeO,sizeof(int),1,fp);
   fwrite(&typeH,sizeof(int),1,fp);
@@ -684,7 +684,7 @@ void PairLJSoftTIP4PSoft::write_restart_settings(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::read_restart_settings(FILE *fp)
+void PairLJCutTIP4PCutSoft::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
     fread(&typeO,sizeof(int),1,fp);
@@ -728,7 +728,7 @@ void PairLJSoftTIP4PSoft::read_restart_settings(FILE *fp)
    proc 0 writes to data file
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::write_data(FILE *fp)
+void PairLJCutTIP4PCutSoft::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     fprintf(fp,"%d %g %g %g\n",i,epsilon[i][i],sigma[i][i],lambda[i][i]);
@@ -738,7 +738,7 @@ void PairLJSoftTIP4PSoft::write_data(FILE *fp)
    proc 0 writes all pairs to data file
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::write_data_all(FILE *fp)
+void PairLJCutTIP4PCutSoft::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
@@ -753,7 +753,7 @@ void PairLJSoftTIP4PSoft::write_data_all(FILE *fp)
   return it as xM
 ------------------------------------------------------------------------- */
 
-void PairLJSoftTIP4PSoft::compute_newsite(double *xO,  double *xH1,
+void PairLJCutTIP4PCutSoft::compute_newsite(double *xO,  double *xH1,
                                         double *xH2, double *xM)
 {
   double delx1 = xH1[0] - xO[0];
@@ -775,7 +775,7 @@ void PairLJSoftTIP4PSoft::compute_newsite(double *xO,  double *xH1,
    memory usage of hneigh
 ------------------------------------------------------------------------- */
 
-double PairLJSoftTIP4PSoft::memory_usage()
+double PairLJCutTIP4PCutSoft::memory_usage()
 {
   double bytes = maxeatom * sizeof(double);
   bytes += maxvatom*6 * sizeof(double);
@@ -785,7 +785,7 @@ double PairLJSoftTIP4PSoft::memory_usage()
 
 /* ---------------------------------------------------------------------- */
 
-void *PairLJSoftTIP4PSoft::extract(const char *str, int &dim)
+void *PairLJCutTIP4PCutSoft::extract(const char *str, int &dim)
 {
   dim = 0;
   if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;

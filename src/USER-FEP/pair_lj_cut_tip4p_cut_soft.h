@@ -13,21 +13,21 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(lj/soft/tip4p/soft,PairLJSoftTIP4PSoft)
+PairStyle(lj/cut/tip4p/cut/soft,PairLJCutTIP4PCutSoft)
 
 #else
 
-#ifndef LMP_PAIR_LJ_SOFT_TIP4P_SOFT_H
-#define LMP_PAIR_LJ_SOFT_TIP4P_SOFT_H
+#ifndef LMP_PAIR_LJ_CUT_TIP4P_CUT_SOFT_H
+#define LMP_PAIR_LJ_CUT_TIP4P_CUT_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairLJSoftTIP4PSoft : public Pair {
+class PairLJCutTIP4PCutSoft : public Pair {
  public:
-  PairLJSoftTIP4PSoft(class LAMMPS *);
-  virtual ~PairLJSoftTIP4PSoft();
+  PairLJCutTIP4PCutSoft(class LAMMPS *);
+  virtual ~PairLJCutTIP4PCutSoft();
   virtual void compute(int, int);
   void settings(int, char **);
   void coeff(int, char **);
@@ -87,15 +87,19 @@ E: Incorrect args for pair coefficients
 
 UNDOCUMENTED
 
-E: Pair style lj/soft/tip4p/soft requires atom IDs
+E: Pair style lj/cut/tip4p/cut/soft requires atom IDs
 
 UNDOCUMENTED
 
-E: Pair style lj/soft/tip4p/soft requires newton pair on
+E: Pair style lj/cut/tip4p/cut/soft requires newton pair on
 
 UNDOCUMENTED
 
-E: Pair style lj/soft/tip4p/soft requires atom attribute q
+E: Pair style lj/cut/tip4p/cut/soft requires atom attribute q
+
+UNDOCUMENTED
+
+E: Pair style lj/cut/tip4p/cut/soft different lambda values in mix
 
 UNDOCUMENTED
 
@@ -107,7 +111,7 @@ E: Must use an angle style with TIP4P potential
 
 UNDOCUMENTED
 
-E: Water H epsilon must be 0.0 for pair style lj/soft/tip4p/soft
+E: Water H epsilon must be 0.0 for pair style lj/cut/tip4p/cut/soft
 
 UNDOCUMENTED
 

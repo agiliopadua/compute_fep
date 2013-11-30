@@ -6,61 +6,58 @@
 
 :line
 
-pair_style lj/soft/coul/soft command :h3
-pair_style lj/soft/tip4p/soft command :h3
-pair_style lj/soft command :h3
-pair_style coul/soft command :h3
+pair_style lj/cut/coul/cut/soft command :h3
+pair_style lj/cut/tip4p/cut/soft command :h3
+pair_style lj/cut/soft command :h3
+pair_style coul/cut/soft command :h3
 
 
 [Syntax:]
 
 pair_style style args :pre
 
-style = {lj/soft/coul/soft} or {lj/soft/coul/soft} or {lj/soft} or {coul/soft}
+style = {lj/cut/coul/cut/soft} or {lj/cut/tip4p/cut/soft} or {lj/cut/soft} or {coul/cut/soft}
 args = list of arguments for a particular style :ul
-  {lj/soft/coul/soft} args = cutoff (cutoff2)
+  {lj/cut/coul/cut/soft} args = cutoff (cutoff2)
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/soft/tip4p/soft} args = otype htype btype atype qdist cutoff (cutoff2)
+  {lj/cut/tip4p/cut/soft} args = otype htype btype atype qdist cutoff (cutoff2)
     otype,htype = atom types for TIP4P O and H
     btype,atype = bond and angle types for TIP4P waters
     qdist = distance from O atom to massless charge (distance units)
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/soft/tip4p/soft} args = cutoff (cutoff2)
-    cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
-    cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/soft} args = cutoff
+  {lj/cut/soft} args = cutoff
     cutoff = global cutoff for Lennard-Jones interactions (distance units)
-  {coul/soft} args = cutoff
+  {coul/cut/soft} args = cutoff
     cutoff = global cutoff for Coulomb interactions (distance units)
 :pre
 
 [Examples:]
 
-pair_style lj/soft/coul/soft 10.0
-pair_style lj/soft/coul/soft 10.0 10.0
+pair_style lj/cut/coul/cut/soft 10.0
+pair_style lj/cut/coul/cut/soft 10.0 10.0
 pair_coeff * * 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 0.0 10.0
 pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 :pre
 
-pair_style lj/cut/tip4p/cut 1 2 7 8 0.15 10.3
-pair_style lj/cut/tip4p/cut 1 2 7 8 0.15 10.3 10.0
+pair_style lj/cut/tip4p/cut/soft 1 2 7 8 0.15 10.3
+pair_style lj/cut/tip4p/cut/soft 1 2 7 8 0.15 10.3 10.0
 pair_coeff * * 0.155 3.1536 1.0
 pair_coeff 1 1 0.155 3.1536 1.0 9.0 :pre
 
-pair_style lj/soft 10.0
+pair_style lj/cut/soft 10.0
 pair_coeff * * 0.28 3.1 1.0
 pair_coeff * * 0.28 3.1 0.2 10.0 :pre
  
-pair_style coul/soft 10.0
+pair_style coul/cut/soft 10.0
 pair_coeff * * 1.0
 pair_coeff * * 1.0 10.0 :pre
 
 [Description:]
 
-The {lj/soft/coul/soft} style and substyles compute the 12/6
+The {lj/cut/coul/cut/soft} style and substyles compute the 12/6
 Lennard-Jones and Coulomb potential modified by a soft core, in order
 to avoid singularities during free energy calculations when sites are
 created or anihilated "(Beutler)"_#Beutler,
@@ -89,22 +86,22 @@ If one cutoff is specified in the pair_style command, it is used for
 both the LJ and Coulombic terms.  If two cutoffs are specified, they
 are used as cutoffs for the LJ and Coulombic terms respectively.
 
-The {cut/soft/tip4p/soft} implements a soft-core version of the TIP4P
+The {lj/cut/tip4p/cut/soft} implements a soft-core version of the TIP4P
 water model. It's usage is documented in the "pair_lj"_pair_lj.html
 styles. This soft-core version adds the lambda parameter to the list
 of arguments, after epsilon and sigma in the
 "pair_coeff"_pair_coeff.html command.
 
-The {cut/soft} substyle is designed to be combined with other pair
+The {coul/cut/soft} substyle is designed to be combined with other pair
 potentials via the "pair_style hybrid/overlay"_pair_hybrid.html
 command.  This is because it has no repulsive core.  Hence, if used by
 itself, there will be no repulsion to keep two oppositely charged
 particles from overlapping each other. In this case, if lambda = 1, a
-singularity may occur.  The {cut/soft} substyle is suitable to
+singularity may occur.  The {coul/cut/soft} substyle is suitable to
 represent charges embedded in the Lennard-Jones radius of another site
 (for example hydrogen atoms in several water models).
 
-For the {lj/soft/coul/soft} pair style, the following coefficients
+For the {lj/cut/coul/cut/soft} pair style, the following coefficients
 must be defined for each pair of atoms types via the
 "pair_coeff"_pair_coeff.html command as in the examples above, or in
 the data file or restart files read by the "read_data"_read_data.html
@@ -126,8 +123,8 @@ LJ and Coulombic cutoffs specified in the pair_style command are used.
 If only one cutoff is specified, it is used as the cutoff for both LJ
 and Coulombic interactions for this type pair.  If both coefficients
 are specified, they are used as the LJ and Coulombic cutoffs for this
-type pair.  You cannot specify 2 cutoffs for style {lj/soft}, since it
-has no Coulombic terms. For the {coul/soft} only lambda and the
+type pair.  You cannot specify 2 cutoffs for style {lj/cut/soft}, since it
+has no Coulombic terms. For the {coul/cut/soft} only lambda and the
 optional cutoff2 are to be specified.
 
 The following coefficients have fixed values: n = 2, alpha_LJ = 0.5,
@@ -161,7 +158,7 @@ to be specified in an input script that reads a restart file.
 
 To avoid division by zero do not set sigma = 0. When sites do not
 interact though the Lennard-Jones term use epsilon = 0 and sigma = 1
-for example, or else use the {coul/soft} substyle.
+for example, or else use the {coul/cut/soft} substyle.
 
 
 [Related commands:]

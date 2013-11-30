@@ -19,7 +19,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "pair_lj_soft.h"
+#include "pair_lj_cut_soft.h"
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
@@ -34,14 +34,14 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJSoft::PairLJSoft(LAMMPS *lmp) : Pair(lmp)
+PairLJCutSoft::PairLJCutSoft(LAMMPS *lmp) : Pair(lmp)
 {
   writedata = 1;
 }
 
 /* ---------------------------------------------------------------------- */
 
-PairLJSoft::~PairLJSoft()
+PairLJCutSoft::~PairLJCutSoft()
 {
   if (allocated) {
     memory->destroy(setflag);
@@ -60,7 +60,7 @@ PairLJSoft::~PairLJSoft()
 
 /* ---------------------------------------------------------------------- */
 
-void PairLJSoft::compute(int eflag, int vflag)
+void PairLJCutSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
@@ -143,7 +143,7 @@ void PairLJSoft::compute(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::allocate()
+void PairLJCutSoft::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -169,7 +169,7 @@ void PairLJSoft::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::settings(int narg, char **arg)
+void PairLJCutSoft::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
@@ -189,7 +189,7 @@ void PairLJSoft::settings(int narg, char **arg)
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::coeff(int narg, char **arg)
+void PairLJCutSoft::coeff(int narg, char **arg)
 {
   if (narg < 4 || narg > 5)
     error->all(FLERR,"Incorrect args for pair coefficients");
@@ -225,7 +225,7 @@ void PairLJSoft::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::init_style()
+void PairLJCutSoft::init_style()
 {
   neighbor->request(this);
 
@@ -237,14 +237,14 @@ void PairLJSoft::init_style()
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairLJSoft::init_one(int i, int j)
+double PairLJCutSoft::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
                                sigma[i][i],sigma[j][j]);
     sigma[i][j] = mix_distance(sigma[i][i],sigma[j][j]);
     if (lambda[i][i] != lambda[j][j])
-      error->all(FLERR,"Pair lj/soft different lambda values in mix");
+      error->all(FLERR,"Pair lj/cut/soft different lambda values in mix");
     lambda[i][j] = lambda[i][i];
     cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
@@ -301,7 +301,7 @@ double PairLJSoft::init_one(int i, int j)
    proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::write_restart(FILE *fp)
+void PairLJCutSoft::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -322,7 +322,7 @@ void PairLJSoft::write_restart(FILE *fp)
    proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::read_restart(FILE *fp)
+void PairLJCutSoft::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
   allocate();
@@ -352,7 +352,7 @@ void PairLJSoft::read_restart(FILE *fp)
    proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::write_restart_settings(FILE *fp)
+void PairLJCutSoft::write_restart_settings(FILE *fp)
 {
   fwrite(&nlambda,sizeof(double),1,fp);
   fwrite(&alphalj,sizeof(double),1,fp);
@@ -367,7 +367,7 @@ void PairLJSoft::write_restart_settings(FILE *fp)
    proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::read_restart_settings(FILE *fp)
+void PairLJCutSoft::read_restart_settings(FILE *fp)
 {
   int me = comm->me;
   if (me == 0) {
@@ -392,7 +392,7 @@ void PairLJSoft::read_restart_settings(FILE *fp)
    proc 0 writes to data file
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::write_data(FILE *fp)
+void PairLJCutSoft::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     fprintf(fp,"%d %g %g %g\n",i,epsilon[i][i],sigma[i][i],lambda[i][i]);
@@ -402,7 +402,7 @@ void PairLJSoft::write_data(FILE *fp)
    proc 0 writes all pairs to data file
 ------------------------------------------------------------------------- */
 
-void PairLJSoft::write_data_all(FILE *fp)
+void PairLJCutSoft::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
@@ -412,7 +412,7 @@ void PairLJSoft::write_data_all(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double PairLJSoft::single(int i, int j, int itype, int jtype, double rsq,
+double PairLJCutSoft::single(int i, int j, int itype, int jtype, double rsq,
                          double factor_coul, double factor_lj,
                          double &fforce)
 {
@@ -437,7 +437,7 @@ double PairLJSoft::single(int i, int j, int itype, int jtype, double rsq,
 
 /* ---------------------------------------------------------------------- */
 
-void *PairLJSoft::extract(const char *str, int &dim)
+void *PairLJCutSoft::extract(const char *str, int &dim)
 {
   dim = 2;
   if (strcmp(str,"epsilon") == 0) return (void *) epsilon;

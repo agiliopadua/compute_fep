@@ -13,21 +13,21 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(coul/soft,PairCoulSoft)
+PairStyle(coul/cut/soft,PairCoulCutSoft)
 
 #else
 
-#ifndef LMP_PAIR_COUL_SOFT_H
-#define LMP_PAIR_COUL_SOFT_H
+#ifndef LMP_PAIR_COUL_CUT_SOFT_H
+#define LMP_PAIR_COUL_CUT_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairCoulSoft : public Pair {
+class PairCoulCutSoft : public Pair {
  public:
-  PairCoulSoft(class LAMMPS *);
-  virtual ~PairCoulSoft();
+  PairCoulCutSoft(class LAMMPS *);
+  virtual ~PairCoulCutSoft();
   virtual void compute(int, int);
   virtual void settings(int, char **);
   void coeff(int, char **);
@@ -69,11 +69,11 @@ E: Incorrect args for pair coefficients
 
 Self-explanatory.  Check the input script or data file.
 
-E: Pair style coul/soft requires atom attribute q
+E: Pair style coul/cut/soft requires atom attribute q
 
 The atom style defined does not have these attributes.
 
-E: Pair coul/soft different lambda values in mix
+E: Pair coul/cut/soft different lambda values in mix
 
 The value of lambda has to be the same for I J pairs.
 

@@ -19,7 +19,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "pair_coul_soft.h"
+#include "pair_coul_cut_soft.h"
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
@@ -32,11 +32,11 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-PairCoulSoft::PairCoulSoft(LAMMPS *lmp) : Pair(lmp) {}
+PairCoulCutSoft::PairCoulCutSoft(LAMMPS *lmp) : Pair(lmp) {}
 
 /* ---------------------------------------------------------------------- */
 
-PairCoulSoft::~PairCoulSoft()
+PairCoulCutSoft::~PairCoulCutSoft()
 {
   if (allocated) {
     memory->destroy(setflag);
@@ -51,7 +51,7 @@ PairCoulSoft::~PairCoulSoft()
 
 /* ---------------------------------------------------------------------- */
 
-void PairCoulSoft::compute(int eflag, int vflag)
+void PairCoulCutSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,ecoul,fpair;
@@ -133,7 +133,7 @@ void PairCoulSoft::compute(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::allocate()
+void PairCoulCutSoft::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -155,7 +155,7 @@ void PairCoulSoft::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::settings(int narg, char **arg)
+void PairCoulCutSoft::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
@@ -175,7 +175,7 @@ void PairCoulSoft::settings(int narg, char **arg)
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::coeff(int narg, char **arg)
+void PairCoulCutSoft::coeff(int narg, char **arg)
 {
   if (narg < 3 || narg > 4) 
     error->all(FLERR,"Incorrect args for pair coefficients");
@@ -208,10 +208,10 @@ void PairCoulSoft::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::init_style()
+void PairCoulCutSoft::init_style()
 {
   if (!atom->q_flag)
-    error->all(FLERR,"Pair style coul/soft requires atom attribute q");
+    error->all(FLERR,"Pair style coul/cut/soft requires atom attribute q");
 
   neighbor->request(this);
 
@@ -223,11 +223,11 @@ void PairCoulSoft::init_style()
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairCoulSoft::init_one(int i, int j)
+double PairCoulCutSoft::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     if (lambda[i][i] != lambda[j][j])
-      error->all(FLERR,"Pair coul/soft different lambda values in mix");
+      error->all(FLERR,"Pair coul/cut/soft different lambda values in mix");
     lambda[i][j] = lambda[i][i];
     cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
@@ -247,7 +247,7 @@ double PairCoulSoft::init_one(int i, int j)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::write_restart(FILE *fp)
+void PairCoulCutSoft::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -266,7 +266,7 @@ void PairCoulSoft::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::read_restart(FILE *fp)
+void PairCoulCutSoft::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
   allocate();
@@ -292,7 +292,7 @@ void PairCoulSoft::read_restart(FILE *fp)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::write_restart_settings(FILE *fp)
+void PairCoulCutSoft::write_restart_settings(FILE *fp)
 {
   fwrite(&nlambda,sizeof(double),1,fp);
   fwrite(&alphac,sizeof(double),1,fp);
@@ -306,7 +306,7 @@ void PairCoulSoft::write_restart_settings(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::read_restart_settings(FILE *fp)
+void PairCoulCutSoft::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
     fread(&nlambda,sizeof(double),1,fp);
@@ -328,7 +328,7 @@ void PairCoulSoft::read_restart_settings(FILE *fp)
    proc 0 writes to data file
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::write_data(FILE *fp)
+void PairCoulCutSoft::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     fprintf(fp,"%d %g\n",i,lambda[i][i]);
@@ -338,7 +338,7 @@ void PairCoulSoft::write_data(FILE *fp)
    proc 0 writes all pairs to data file
 ------------------------------------------------------------------------- */
 
-void PairCoulSoft::write_data_all(FILE *fp)
+void PairCoulCutSoft::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
@@ -347,7 +347,7 @@ void PairCoulSoft::write_data_all(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double PairCoulSoft::single(int i, int j, int itype, int jtype,
+double PairCoulCutSoft::single(int i, int j, int itype, int jtype,
                            double rsq, double factor_coul, double factor_lj,
                            double &fforce)
 {
@@ -369,7 +369,7 @@ double PairCoulSoft::single(int i, int j, int itype, int jtype,
 
 /* ---------------------------------------------------------------------- */
 
-void *PairCoulSoft::extract(const char *str, int &dim)
+void *PairCoulCutSoft::extract(const char *str, int &dim)
 {
   dim = 2;
   if (strcmp(str,"lambda") == 0) return (void *) lambda;
