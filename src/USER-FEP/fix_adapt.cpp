@@ -11,6 +11,10 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+   Charges by type and after option: Agilio Padua (Univ Blaise Pascal & CNRS)
+------------------------------------------------------------------------- */
+
 #include "math.h"
 #include "string.h"
 #include "stdlib.h"

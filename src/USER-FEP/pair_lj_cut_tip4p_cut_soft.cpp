@@ -13,7 +13,7 @@
 
 /* ----------------------------------------------------------------------
    Contributing author: Pavel Elkind (Gothenburg University)
-             Soft-core: Agilio Padua (ICCF UBP CNRS)
+   Soft-core version: Agilio Padua (Univ Blaise Pascal & CNRS)
 ------------------------------------------------------------------------- */
 
 #include "math.h"
