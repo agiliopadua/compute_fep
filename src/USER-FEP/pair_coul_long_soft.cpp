@@ -12,6 +12,7 @@
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
+   Contributing author: Paul Crozier (SNL)
    Soft-core version: Agilio Padua (Univ Blaise Pascal & CNRS)
 ------------------------------------------------------------------------- */
 
@@ -19,30 +20,45 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "pair_coul_cut_soft.h"
+#include "pair_coul_long_soft.h"
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
+#include "kspace.h"
 #include "neighbor.h"
 #include "neigh_list.h"
+#include "update.h"
+#include "integrate.h"
 #include "memory.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
 
+#define EWALD_F   1.12837917
+#define EWALD_P   0.3275911
+#define A1        0.254829592
+#define A2       -0.284496736
+#define A3        1.421413741
+#define A4       -1.453152027
+#define A5        1.061405429
+
 /* ---------------------------------------------------------------------- */
 
-PairCoulCutSoft::PairCoulCutSoft(LAMMPS *lmp) : Pair(lmp) {}
+PairCoulLongSoft::PairCoulLongSoft(LAMMPS *lmp) : Pair(lmp)
+{
+  ewaldflag = pppmflag = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
-PairCoulCutSoft::~PairCoulCutSoft()
+PairCoulLongSoft::~PairCoulLongSoft()
 {
   if (allocated) {
     memory->destroy(setflag);
     memory->destroy(cutsq);
 
-    memory->destroy(cut);
+    memory->destroy(scale);
+
     memory->destroy(lambda);
     memory->destroy(lj1);
     memory->destroy(lj4);
@@ -51,11 +67,12 @@ PairCoulCutSoft::~PairCoulCutSoft()
 
 /* ---------------------------------------------------------------------- */
 
-void PairCoulCutSoft::compute(int eflag, int vflag)
+void PairCoulLongSoft::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,ecoul,fpair;
-  double rsq,forcecoul,factor_coul;
+  double r,rsq,forcecoul,factor_coul;
+  double grij,expm2,prefactor,t,erfc;
   double denc;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
@@ -100,13 +117,22 @@ void PairCoulCutSoft::compute(int eflag, int vflag)
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
-      if (rsq < cutsq[itype][jtype]) {
+      if (rsq < cut_coulsq) {
+
+        r = sqrt(rsq);
+        grij = g_ewald * r;
+        expm2 = exp(-grij*grij);
+        t = 1.0 / (1.0 + EWALD_P*grij);
+        erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
 
         denc = sqrt(lj4[itype][jtype] + rsq);
-        forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
+        prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
           (denc*denc*denc);
 
-        fpair = factor_coul*forcecoul / rsq;
+        forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
+        if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
+
+        fpair = forcecoul / rsq;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -117,8 +143,11 @@ void PairCoulCutSoft::compute(int eflag, int vflag)
           f[j][2] -= delz*fpair;
         }
 
-        if (eflag)
-          ecoul = factor_coul * qqrd2e * lj1[itype][jtype] * qtmp*q[j] / denc;
+        if (eflag) {
+          prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / denc;
+          ecoul = prefactor*erfc;
+          if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
+        }
 
         if (evflag) ev_tally(i,j,nlocal,newton_pair,
                              0.0,ecoul,fpair,delx,dely,delz);
@@ -133,7 +162,7 @@ void PairCoulCutSoft::compute(int eflag, int vflag)
    allocate all arrays
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::allocate()
+void PairCoulLongSoft::allocate()
 {
   allocated = 1;
   int n = atom->ntypes;
@@ -145,7 +174,8 @@ void PairCoulCutSoft::allocate()
 
   memory->create(cutsq,n+1,n+1,"pair:cutsq");
 
-  memory->create(cut,n+1,n+1,"pair:cut");
+  memory->create(scale,n+1,n+1,"pair:scale");
+
   memory->create(lambda,n+1,n+1,"pair:lambda");
   memory->create(lj1,n+1,n+1,"pair:lj1");
   memory->create(lj4,n+1,n+1,"pair:lj4");
@@ -155,29 +185,20 @@ void PairCoulCutSoft::allocate()
    global settings
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::settings(int narg, char **arg)
+void PairCoulLongSoft::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = force->numeric(FLERR,arg[0]);
-
-  // reset cutoffs that have been explicitly set
-
-  if (allocated) {
-    int i,j;
-    for (i = 1; i <= atom->ntypes; i++)
-      for (j = i+1; j <= atom->ntypes; j++)
-        if (setflag[i][j]) cut[i][j] = cut_global;
-  }
+  cut_coul = force->numeric(FLERR,arg[0]);
 }
 
 /* ----------------------------------------------------------------------
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::coeff(int narg, char **arg)
+void PairCoulLongSoft::coeff(int narg, char **arg)
 {
-  if (narg < 3 || narg > 4) 
+  if (narg != 3) 
     error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
@@ -187,14 +208,11 @@ void PairCoulCutSoft::coeff(int narg, char **arg)
 
   double lambda_one = force->numeric(FLERR,arg[2]);
 
-  double cut_one = cut_global;
-  if (narg == 4) cut_one = force->numeric(FLERR,arg[3]);
-
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
     for (int j = MAX(jlo,i); j <= jhi; j++) {
       lambda[i][j] = lambda_one;
-      cut[i][j] = cut_one;
+      scale[i][j] = 1.0;
       setflag[i][j] = 1;
       count++;
     }
@@ -203,17 +221,24 @@ void PairCoulCutSoft::coeff(int narg, char **arg)
   if (count == 0) error->all(FLERR,"Incorrect args for pair coefficients");
 }
 
-
 /* ----------------------------------------------------------------------
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::init_style()
+void PairCoulLongSoft::init_style()
 {
   if (!atom->q_flag)
-    error->all(FLERR,"Pair style coul/cut/soft requires atom attribute q");
+    error->all(FLERR,"Pair style lj/cut/coul/long requires atom attribute q");
 
   neighbor->request(this);
+
+  cut_coulsq = cut_coul * cut_coul;
+
+  // insure use of KSpace long-range solver, set g_ewald
+
+ if (force->kspace == NULL)
+    error->all(FLERR,"Pair style requires a KSpace style");
+  g_ewald = force->kspace->g_ewald;
 
   // parameters for soft-core
 
@@ -225,31 +250,30 @@ void PairCoulCutSoft::init_style()
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairCoulCutSoft::init_one(int i, int j)
+double PairCoulLongSoft::init_one(int i, int j)
 {
   if (setflag[i][j] == 0) {
     if (lambda[i][i] != lambda[j][j])
       error->all(FLERR,"Pair coul/cut/soft different lambda values in mix");
     lambda[i][j] = lambda[i][i];
-    cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
   lj4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
-  cut[j][i] = cut[i][j];
+  scale[j][i] = scale[i][j];
   lambda[j][i] = lambda[i][j];
   lj1[j][i] = lj1[i][j];
   lj4[j][i] = lj4[i][j];
 
-  return cut[i][j];
+  return cut_coul;
 }
 
 /* ----------------------------------------------------------------------
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::write_restart(FILE *fp)
+void PairCoulLongSoft::write_restart(FILE *fp)
 {
   write_restart_settings(fp);
 
@@ -257,10 +281,8 @@ void PairCoulCutSoft::write_restart(FILE *fp)
   for (i = 1; i <= atom->ntypes; i++)
     for (j = i; j <= atom->ntypes; j++) {
       fwrite(&setflag[i][j],sizeof(int),1,fp);
-      if (setflag[i][j]) {
+      if (setflag[i][j])
         fwrite(&lambda[i][j],sizeof(double),1,fp);
-        fwrite(&cut[i][j],sizeof(double),1,fp);
-      }
     }
 }
 
@@ -268,9 +290,10 @@ void PairCoulCutSoft::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::read_restart(FILE *fp)
+void PairCoulLongSoft::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
+
   allocate();
 
   int i,j;
@@ -280,12 +303,9 @@ void PairCoulCutSoft::read_restart(FILE *fp)
       if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
       MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
       if (setflag[i][j]) {
-        if (me == 0) {
+        if (me == 0)
           fread(&lambda[i][j],sizeof(double),1,fp);
-          fread(&cut[i][j],sizeof(double),1,fp);
-        }
         MPI_Bcast(&lambda[i][j],1,MPI_DOUBLE,0,world);
-        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
       }
     }
 }
@@ -294,12 +314,12 @@ void PairCoulCutSoft::read_restart(FILE *fp)
   proc 0 writes to restart file
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::write_restart_settings(FILE *fp)
+void PairCoulLongSoft::write_restart_settings(FILE *fp)
 {
   fwrite(&nlambda,sizeof(double),1,fp);
   fwrite(&alphac,sizeof(double),1,fp);
 
-  fwrite(&cut_global,sizeof(double),1,fp);
+  fwrite(&cut_coul,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
 }
@@ -308,72 +328,70 @@ void PairCoulCutSoft::write_restart_settings(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairCoulCutSoft::read_restart_settings(FILE *fp)
+void PairCoulLongSoft::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
     fread(&nlambda,sizeof(double),1,fp);
     fread(&alphac,sizeof(double),1,fp);
 
-    fread(&cut_global,sizeof(double),1,fp);
+    fread(&cut_coul,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
   }
   MPI_Bcast(&nlambda,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&alphac,1,MPI_DOUBLE,0,world);
 
-  MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
+  MPI_Bcast(&cut_coul,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
 }
 
-/* ----------------------------------------------------------------------
-   proc 0 writes to data file
-------------------------------------------------------------------------- */
-
-void PairCoulCutSoft::write_data(FILE *fp)
-{
-  for (int i = 1; i <= atom->ntypes; i++)
-    fprintf(fp,"%d %g\n",i,lambda[i][i]);
-}
-
-/* ----------------------------------------------------------------------
-   proc 0 writes all pairs to data file
-------------------------------------------------------------------------- */
-
-void PairCoulCutSoft::write_data_all(FILE *fp)
-{
-  for (int i = 1; i <= atom->ntypes; i++)
-    for (int j = i; j <= atom->ntypes; j++)
-      fprintf(fp,"%d %d %g\n",i,j,lambda[i][j]);
-}
-
 /* ---------------------------------------------------------------------- */
 
-double PairCoulCutSoft::single(int i, int j, int itype, int jtype,
-                           double rsq, double factor_coul, double factor_lj,
-                           double &fforce)
+double PairCoulLongSoft::single(int i, int j, int itype, int jtype,
+                            double rsq,
+                            double factor_coul, double factor_lj,
+                            double &fforce)
 {
+  double r,grij,expm2,t,erfc,prefactor;
   double forcecoul,phicoul;
   double denc;
 
-  if (rsq < cutsq[itype][jtype]) {
+  if (rsq < cut_coulsq) {
+    r = sqrt(rsq);
+    grij = g_ewald * r;
+    expm2 = exp(-grij*grij);
+    t = 1.0 / (1.0 + EWALD_P*grij);
+    erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
+    
     denc = sqrt(lj4[itype][jtype] + rsq);
-    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
+    prefactor = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] * rsq /
       (denc*denc*denc);
-  } else forcecoul = 0.0; 
-  fforce = factor_coul*forcecoul / rsq;
 
-  if (rsq < cutsq[itype][jtype])
-    phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
-  else phicoul = 0.0;
-  return factor_coul*phicoul;
+    forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
+    if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
+  } else forcecoul = 0.0;
+
+  fforce = forcecoul / rsq;
+
+  if (rsq < cut_coulsq) {
+    prefactor = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
+    phicoul = prefactor*erfc;
+    if (factor_coul < 1.0) phicoul -= (1.0-factor_coul)*prefactor;
+  } else phicoul = 0.0;
+
+  return phicoul;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void *PairCoulCutSoft::extract(const char *str, int &dim)
+void *PairCoulLongSoft::extract(const char *str, int &dim)
 {
+  dim = 0;
+  if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;
   dim = 2;
+  if (strcmp(str,"scale") == 0) return (void *) scale;
   if (strcmp(str,"lambda") == 0) return (void *) lambda;
+  
   return NULL;
 }

@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -13,47 +13,40 @@
 
 #ifdef PAIR_CLASS
 
-PairStyle(lj/cut/soft,PairLJCutSoft)
+PairStyle(coul/long/soft,PairCoulLongSoft)
 
 #else
 
-#ifndef LMP_PAIR_LJ_CUT_SOFT_H
-#define LMP_PAIR_LJ_CUT_SOFT_H
+#ifndef LMP_PAIR_COUL_LONG_SOFT_H
+#define LMP_PAIR_COUL_LONG_SOFT_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairLJCutSoft : public Pair {
+class PairCoulLongSoft : public Pair {
  public:
-  PairLJCutSoft(class LAMMPS *);
-  virtual ~PairLJCutSoft();
+  PairCoulLongSoft(class LAMMPS *);
+  ~PairCoulLongSoft();
   virtual void compute(int, int);
   virtual void settings(int, char **);
   void coeff(int, char **);
   virtual void init_style();
-  void init_list(int, class NeighList *);
-  virtual double init_one(int, int);
+  double init_one(int, int);
   void write_restart(FILE *);
   void read_restart(FILE *);
   virtual void write_restart_settings(FILE *);
   virtual void read_restart_settings(FILE *);
-  void write_data(FILE *);
-  void write_data_all(FILE *);
   virtual double single(int, int, int, int, double, double, double, double &);
-  void *extract(const char *, int &);
-
-  void compute_inner();
-  void compute_middle();
-  void compute_outer(int, int);
+  virtual void *extract(const char *, int &);
 
  protected:
-  double cut_global;
-  double **cut;
-  double **epsilon,**sigma, **lambda;
-  double nlambda, alphalj;
-  double **lj1,**lj2,**lj3,**offset;
-  double *cut_respa;
+  double cut_coul,cut_coulsq;
+  double g_ewald;
+  double **scale;
+  double **lambda;
+  double nlambda, alphac;
+  double **lj1, **lj4;
 
   void allocate();
 };
@@ -75,13 +68,12 @@ E: Incorrect args for pair coefficients
 
 Self-explanatory.  Check the input script or data file.
 
-E: Pair cutoff < Respa interior cutoff
+E: Pair style lj/cut/coul/long requires atom attribute q
 
-One or more pairwise cutoffs are too short to use with the specified
-rRESPA cutoffs.
+The atom style defined does not have this attribute.
 
-E: Pair lj/cut/soft different lambda values in mix
+E: Pair style requires a KSpace style
 
-The value of lambda has to be the same for I J pairs.
+No kspace style is defined.
 
 */

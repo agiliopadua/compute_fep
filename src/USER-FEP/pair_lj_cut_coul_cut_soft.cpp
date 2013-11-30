@@ -118,9 +118,9 @@ void PairLJCutCoulCutSoft::compute(int eflag, int vflag)
       if (rsq < cutsq[itype][jtype]) {
 
         if (rsq < cut_coulsq[itype][jtype]) {
-            denc = sqrt(lj4[itype][jtype] + rsq);
-            forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
-              (denc*denc*denc);
+          denc = sqrt(lj4[itype][jtype] + rsq);
+          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] * rsq /
+            (denc*denc*denc);
         } else forcecoul = 0.0;
         
         if (rsq < cut_ljsq[itype][jtype]) {
@@ -266,6 +266,8 @@ void PairLJCutCoulCutSoft::init_style()
 
   neighbor->request(this);
 
+  // parameters for soft-core
+
   nlambda = 2;
   alphalj = 0.5;
   alphac = 10.0 * force->angstrom * force->angstrom;
@@ -292,15 +294,13 @@ double PairLJCutCoulCutSoft::init_one(int i, int j)
   cut_ljsq[i][j] = cut_lj[i][j] * cut_lj[i][j];
   cut_coulsq[i][j] = cut_coul[i][j] * cut_coul[i][j];
 
-  double sig2 = sigma[i][j]*sigma[i][j];
   lj1[i][j] = pow(lambda[i][j], nlambda);
-  lj2[i][j] = sig2*sig2*sig2;
+  lj2[i][j] = pow(sigma[i][j], 6.0);
   lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
   lj4[i][j] = alphac  * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   if (offset_flag) {
-    double r2sig2 = (sigma[i][j] / cut_lj[i][j]) * (sigma[i][j] / cut_lj[i][j]);
-    double denlj = lj3[i][j] + r2sig2*r2sig2*r2sig2;
+    double denlj = lj3[i][j] + pow(sigma[i][j] / cut_lj[i][j], 6.0);
     offset[i][j] = lj1[i][j] * 4.0 * epsilon[i][j] * (1.0/(denlj*denlj) - 1.0/denlj);
   } else offset[i][j] = 0.0;
 
