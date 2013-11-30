@@ -244,7 +244,7 @@ void PairLJCutTIP4PCutSoft::compute(int eflag, int vflag)
         if (rsq < cut_coulsq) {
 
           denc = sqrt(lj4[itype][jtype] + rsq);
-          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] /v(denc*denc*denc);
+          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
           cforce = factor_coul * forcecoul;
 
         // if i,j are not O atoms, force is applied directly;
