@@ -497,6 +497,8 @@ void *PairTIP4PLongSoft::extract(const char *str, int &dim)
   if (strcmp(str,"typeA") == 0) return (void *) &typeA;
   if (strcmp(str,"typeB") == 0) return (void *) &typeB;
   if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;
+  dim = 2;
+  if (strcmp(str,"lambda") == 0) return (void *) lambda;
   return NULL;
 }
 
