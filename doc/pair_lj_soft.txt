@@ -9,7 +9,6 @@
 pair_style lj/cut/soft command :h3  
 pair_style lj/cut/coul/cut/soft command :h3
 pair_style lj/cut/coul/long/soft command :h3 
-pair_style lj/cut/tip4p/cut/soft command :h3
 pair_style lj/cut/tip4p/long/soft command :h3
 pair_style coul/cut/soft command :h3
 pair_style coul/long/soft command :h3
@@ -20,7 +19,7 @@ pair_style tip4p/long/soft command :h3
 
 pair_style style args :pre
 
-style = {lj/cut/soft} or {lj/cut/coul/cut/soft} or {lj/cut/coul/long/soft} or {lj/cut/tip4p/cut/soft} or {lj/cut/tip4p/long/soft} or {coul/cut/soft} or {coul/long/soft} or {tip4p/long/soft}
+style = {lj/cut/soft} or {lj/cut/coul/cut/soft} or {lj/cut/coul/long/soft} or {lj/cut/tip4p/long/soft} or {coul/cut/soft} or {coul/long/soft} or {tip4p/long/soft}
 args = list of arguments for a particular style :ul
   {lj/cut/soft} args = cutoff
     cutoff = global cutoff for Lennard-Jones interactions (distance units)
@@ -28,12 +27,6 @@ args = list of arguments for a particular style :ul
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/cut/coul/long/soft} args = cutoff
-    cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
-    cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/cut/tip4p/cut/soft} args = otype htype btype atype qdist cutoff (cutoff2)
-    otype,htype = atom types for TIP4P O and H
-    btype,atype = bond and angle types for TIP4P waters
-    qdist = distance from O atom to massless charge (distance units)
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/cut/tip4p/long/soft} args = otype htype btype atype qdist cutoff (cutoff2)
@@ -70,17 +63,12 @@ pair_coeff 1 1 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 0.0 10.0
 pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 :pre
 
-pair_style lj/cut/tip4p/cut/soft 1 2 7 8 0.15 10.3
-pair_style lj/cut/tip4p/cut/soft 1 2 7 8 0.15 10.3 10.0
-pair_coeff * * 0.155 3.1536 1.0
-pair_coeff 1 1 0.155 3.1536 1.0 9.0 :pre
-
 pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3
 pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3 10.0
 pair_coeff * * 0.155 3.1536 1.0
 pair_coeff 1 1 0.155 3.1536 1.0 9.0 :pre
  
-pair_style coul/cut/soft 10.0
+pair_style coul/long/soft 10.0
 pair_coeff * * 1.0
 pair_coeff * * 1.0 10.0 :pre
 
@@ -111,25 +99,21 @@ when sites are created or anihilated and can overlap
 values: n = 2, alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 is an
 appropriate choice.
 
-If one cutoff is specified in the pair_style command, it is used for
-both the LJ and Coulombic terms.  If two cutoffs are specified, they
-are used as cutoffs for the LJ and Coulombic terms respectively.
+The {lj/cut/tip4p/long/soft} implements a soft-core version of the
+TIP4P water model. Its usage is documented in the
+"pair_lj"_pair_lj.html styles. The soft-core version adds the lambda
+parameter to the list of arguments, after epsilon and sigma in the
+"pair_coeff"_pair_coeff.html command.
 
-The {lj/cut/tip4p/cut/soft} and {lj/cut/tip4p/long/soft} implement a
-soft-core version of the TIP4P water model. Their usage is documented
-in the "pair_lj"_pair_lj.html styles. These soft-core versions add the
-lambda parameter to the list of arguments, after epsilon and sigma in
-the "pair_coeff"_pair_coeff.html command.
-
-The {coul/cut/soft} and {coul/long/soft} substyles are designed to be
-combined with other pair potentials via the "pair_style
-hybrid/overlay"_pair_hybrid.html command.  This is because they have
-no repulsive core.  Hence, if used by themselves, there will be no
-repulsion to keep two oppositely charged particles from overlapping
-each other. In this case, if lambda = 1, a singularity may occur.
-These substyles are suitable to represent charges embedded in the
-Lennard-Jones radius of another site (for example hydrogen atoms in
-several water models).
+The {coul/cut/soft}, {coul/long/soft} and {tip4p/long/soft} substyles
+are designed to be combined with other pair potentials via the
+"pair_style hybrid/overlay"_pair_hybrid.html command.  This is because
+they have no repulsive core.  Hence, if used by themselves, there will
+be no repulsion to keep two oppositely charged particles from
+overlapping each other. In this case, if lambda = 1, a singularity may
+occur.  These substyles are suitable to represent charges embedded in
+the Lennard-Jones radius of another site (for example hydrogen atoms
+in several water models).
 
 For the {lj/cut/coul/cut/soft} or {lj/cut/coul/long/soft} pair styles,
 the following coefficients must be defined for each pair of atoms
