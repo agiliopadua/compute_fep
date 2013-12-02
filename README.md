@@ -11,7 +11,7 @@ Installation
 
 2. Add `user-fep` to the `PACKUSER` variable in `lammps/src/Makefile`.
 
-3. Compile:
+3. Compile (the `molecule` and `kspace` packages are required):
 
     make yes-user-fep
 
@@ -24,5 +24,5 @@ Documentation
 The `compute fep`, the modified `fix adapt` and the soft-core `pair
 styles` have documentation pages in the the `doc` directory.
 
-Study the examples provided.
+Some examples of usage are provided.
 

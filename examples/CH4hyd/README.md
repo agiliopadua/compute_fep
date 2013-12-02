@@ -14,16 +14,16 @@ The following directories contain input files and results for
 calculations using free-energy perturbation (FEP) and
 finite-difference thermodynamic integration (FDTI):
 
-- `fep01` Calculation using FEP, multi-stage creation of a methane
+- `fep01` -- Calculation using FEP, multi-stage creation of a methane
   molecule. Results in `fep01.lmp`
 
-- `fep10` Calculation using FEP, multi-stage deletion of a methane
+- `fep10` -- Calculation using FEP, multi-stage deletion of a methane
   molecule. Results in `fep10.lmp`
 
-- `fdti01` Calculation using FDTI, creation of a methane
+- `fdti01` -- Calculation using FDTI, creation of a methane
   molecule. Results in `fdti01.lmp`
 
-- `fdti10` Calculation using FDTI, deletion a methane
+- `fdti10` -- Calculation using FDTI, deletion a methane
   molecule. Results in `fdti10.lmp`
 
 The free-energy profiles can be observed by plotting the values in the
@@ -31,13 +31,13 @@ third column of the results files. The Python scripts `fep.py` and
 `fdti.py` found in the `tools` directory can be used to calculate the
 free-energy differences corresponding to the above transformations:
 
-`fdti.py 300 0.002 < fdti01.lmp`
+    fdti.py 300 0.002 < fdti01.lmp
 
-`fdti.py 300 0.002 < fdti10.lmp`
+    fdti.py 300 0.002 < fdti10.lmp
 
-`fep.py 300 < fep01.lmp`
+    fep.py 300 < fep01.lmp
 
-`fep.py 300 < fep10.lmp`
+    fep.py 300 < fep10.lmp
 
 The outputs are in kcal/mol and can be compared with the experimental
 value of 2.0 kcal/mol, or with a simulation value from the literature
