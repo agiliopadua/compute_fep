@@ -1,7 +1,7 @@
-compute_fep examples
+compute fep examples
 ====================
 
-- `CH4hyd` -- free energy of hydration of methane.
+* `CH4hyd` -- free energy of hydration of methane.
 
 
 

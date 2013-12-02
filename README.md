@@ -9,9 +9,10 @@ Installation
 
 1. Copy the `src/USER-FEP` directory into `lammps/src/USER-FEP`
 
-2. Add `user-fep` to the `PACKUSER` variable in `lammps/src/Makefile`.
+2. Add `user-fep` to the `PACKUSER` variable in `lammps/src/Makefile`
 
-3. Compile (the `kspace` package is required):
+3. Compile (the `kspace` package is required)
+
 
     make yes-user-fep
 
