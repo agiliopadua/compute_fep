@@ -12,7 +12,7 @@ read_data data.0.lmp
 # read_restart restart.*.lmp
 # reset_timestep 0
 
-pair_style hybrid lj/cut/coul/long 10.0 10.0 lj/cut/coul/long/soft 10.0 10.0
+pair_style hybrid lj/cut/coul/long 10.0 10.0 lj/cut/coul/long/soft 2 0.5 10.0 10.0 10.0
 pair_modify tail no
 kspace_style pppm 1.0e-4
 
