@@ -156,9 +156,12 @@ void PairCoulCutSoft::allocate()
 
 void PairCoulCutSoft::settings(int narg, char **arg)
 {
-  if (narg != 1) error->all(FLERR,"Illegal pair_style command");
+  if (narg != 3) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = force->numeric(FLERR,arg[0]);
+  nlambda = force->numeric(FLERR,arg[0]);
+  alphac  = force->numeric(FLERR,arg[1]);
+
+  cut_global = force->numeric(FLERR,arg[2]);
 
   // reset cutoffs that have been explicitly set
 
@@ -213,11 +216,6 @@ void PairCoulCutSoft::init_style()
     error->all(FLERR,"Pair style coul/cut/soft requires atom attribute q");
 
   neighbor->request(this);
-
-  // parameters for soft-core
-
-  nlambda = 2;
-  alphac = 10.0 * force->angstrom * force->angstrom;
 }
 
 /* ----------------------------------------------------------------------
@@ -234,7 +232,7 @@ double PairCoulCutSoft::init_one(int i, int j)
   }
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
-  lj4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj4[i][j] = alphac * pow(1.0 - lambda[i][j], nlambda);
 
   cut[j][i] = cut[i][j];
   lambda[j][i] = lambda[i][j];

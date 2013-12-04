@@ -21,56 +21,68 @@ pair_style style args :pre
 
 style = {lj/cut/soft} or {lj/cut/coul/cut/soft} or {lj/cut/coul/long/soft} or {lj/cut/tip4p/long/soft} or {coul/cut/soft} or {coul/long/soft} or {tip4p/long/soft}
 args = list of arguments for a particular style :ul
-  {lj/cut/soft} args = cutoff
+  {lj/cut/soft} args = n alpha_lj cutoff
+    n, alpha_LJ = parameters of soft-core potential
     cutoff = global cutoff for Lennard-Jones interactions (distance units)
-  {lj/cut/coul/cut/soft} args = cutoff (cutoff2)
+  {lj/cut/coul/cut/soft} args = n alpha_LJ alpha_C cutoff (cutoff2)
+    n, alpha_LJ, alpha_C = parameters of soft-core potential
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/cut/coul/long/soft} args = cutoff
+  {lj/cut/coul/long/soft} args = n alpha_LJ alpha_C cutoff
+    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  {lj/cut/tip4p/long/soft} args = otype htype btype atype qdist cutoff (cutoff2)
+  {lj/cut/tip4p/long/soft} args = otype htype btype atype qdist n alpha_LJ alpha_C cutoff (cutoff2)
     otype,htype = atom types for TIP4P O and H
     btype,atype = bond and angle types for TIP4P waters
     qdist = distance from O atom to massless charge (distance units)
+    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {coul/cut/soft} args = cutoff
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
   {coul/long/soft} args = cutoff
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
-  {tip4p/long/soft} args = cutoff
+  {tip4p/long/soft} args = otype htype btype atype qdist n alpha_C cutoff
+    otype,htype = atom types for TIP4P O and H
+    btype,atype = bond and angle types for TIP4P waters
+    qdist = distance from O atom to massless charge (distance units)
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
 :pre
 
 [Examples:]
 
-pair_style lj/cut/soft 10.0
+pair_style lj/cut/soft 2.0 0.5 9.5
 pair_coeff * * 0.28 3.1 1.0
-pair_coeff * * 0.28 3.1 0.2 10.0 :pre
+pair_coeff 1 1 0.28 3.1 1.0 9.5 :pre
 
-pair_style lj/cut/coul/cut/soft 10.0
-pair_style lj/cut/coul/cut/soft 10.0 10.0
+pair_style lj/cut/coul/cut/soft 2.0 0.5 10.0 9.5
+pair_style lj/cut/coul/cut/soft 2.0 0.5 10.0 9.5 9.5
 pair_coeff * * 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 1.0
+pair_coeff 1 1 0.28 3.1 0.5 10.0
+pair_coeff 1 1 0.28 3.1 0.5 10.0 9.5 :pre
+
+pair_style lj/cut/coul/long/soft 2.0 0.5 10.0 9.5
+pair_style lj/cut/coul/long/soft 2.0 0.5 10.0 9.5 9.5
+pair_coeff * * 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 0.0 10.0
-pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 :pre
+pair_coeff 1 1 0.28 3.1 0.0 10.0 9.5 :pre
 
-pair_style lj/cut/coul/long/soft 10.0
-pair_style lj/cut/coul/long/soft 10.0 10.0
-pair_coeff * * 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 0.0 10.0
-pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 :pre
-
-pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3
-pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3 10.0
+pair_style lj/cut/tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8
+pair_style lj/cut/tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8 9.5
 pair_coeff * * 0.155 3.1536 1.0
-pair_coeff 1 1 0.155 3.1536 1.0 9.0 :pre
+pair_coeff 1 1 0.155 3.1536 1.0 9.5 :pre
  
-pair_style coul/long/soft 10.0
+pair_style coul/long/soft 1.0 10.0 9.5
 pair_coeff * * 1.0
-pair_coeff * * 1.0 10.0 :pre
+pair_coeff 1 1 1.0 9.5 :pre
+
+pair_style tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8
+pair_coeff * * 1.0
+pair_coeff 1 1 1.0 9.5 :pre
 
 [Description:]
 
@@ -85,19 +97,23 @@ Coulomb interactions are damped at short distance,
 
 :c,image(Eqs/pair_coul_soft.jpg)
 
-In the Coulomb part C is an energy-conversion constant, qi and qj are
+In the Coulomb part C is an energy-conversion constant, q_i and q_j are
 the charges on the 2 atoms, and epsilon is the dielectric constant
 which can be set by the "dielectric"_dielectric.html command.
 
-The parameter lambda is an activation parameter. When lambda = 1 the
+The coefficient lambda is an activation parameter. When lambda = 1 the
 pair potentiel is identical to a Lennard-Jones term plus a Coulomb
 term. When lambda = 0 the pair interactions are deactivated. The
 transition between these two extrema is smoothed by a repulsive soft
 core in order to avoid singularities in potential energy and forces
 when sites are created or anihilated and can overlap
-"(Beutler)"_#Beutler. The remaining coefficients can have fixed
-values: n = 2, alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 is an
-appropriate choice.
+"(Beutler)"_#Beutler.
+
+The paratemers n, alpha_LJ and alpha_C (if a Coulomb part is
+present) are set in the "pair_style"_pair_style.html command, before
+the cutoffs.  Usual choices for the exponent are n = 2 or n = 1. For
+the remaining coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2
+are appropriate choices.
 
 The {lj/cut/tip4p/long/soft} implements a soft-core version of the
 TIP4P water model. Its usage is documented in the
@@ -142,9 +158,6 @@ since it has no Coulombic terms. For the {coul/cut/soft} and
 {coul/long/soft} only lambda and the optional cutoff2 are to be
 specified.
 
-The following coefficients have fixed values: n = 2, alpha_LJ = 0.5,
-alpha_C = 10 Angstrom^2 "(Beutler)"_#Beutler. To change these
-recompilation is required.
 
 :line
 

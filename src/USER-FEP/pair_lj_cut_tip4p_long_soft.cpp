@@ -408,17 +408,20 @@ void PairLJCutTIP4PLongSoft::compute(int eflag, int vflag)
 
 void PairLJCutTIP4PLongSoft::settings(int narg, char **arg)
 {
-  if (narg < 6 || narg > 7) error->all(FLERR,"Illegal pair_style command");
+  if (narg < 9 || narg > 10) error->all(FLERR,"Illegal pair_style command");
 
   typeO = force->inumeric(FLERR,arg[0]);
   typeH = force->inumeric(FLERR,arg[1]);
   typeB = force->inumeric(FLERR,arg[2]);
   typeA = force->inumeric(FLERR,arg[3]);
   qdist = force->numeric(FLERR,arg[4]);
+  nlambda = force->numeric(FLERR,arg[5]);
+  alphalj = force->numeric(FLERR,arg[6]);
+  alphac = force->numeric(FLERR,arg[7]);
 
-  cut_lj_global = force->numeric(FLERR,arg[5]);
-  if (narg == 6) cut_coul = cut_lj_global;
-  else cut_coul = force->numeric(FLERR,arg[6]);
+  cut_lj_global = force->numeric(FLERR,arg[8]);
+  if (narg == 9) cut_coul = cut_lj_global;
+  else cut_coul = force->numeric(FLERR,arg[9]);
 
   // reset cutoffs that have been explicitly set
 
@@ -500,8 +503,6 @@ void PairLJCutTIP4PLongSoft::write_restart_settings(FILE *fp)
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
   fwrite(&tail_flag,sizeof(int),1,fp);
-  fwrite(&ncoultablebits,sizeof(int),1,fp);
-  fwrite(&tabinner,sizeof(double),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -524,8 +525,6 @@ void PairLJCutTIP4PLongSoft::read_restart_settings(FILE *fp)
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
     fread(&tail_flag,sizeof(int),1,fp);
-    fread(&ncoultablebits,sizeof(int),1,fp);
-    fread(&tabinner,sizeof(double),1,fp);
   }
 
   MPI_Bcast(&typeO,1,MPI_INT,0,world);
@@ -539,8 +538,6 @@ void PairLJCutTIP4PLongSoft::read_restart_settings(FILE *fp)
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
   MPI_Bcast(&tail_flag,1,MPI_INT,0,world);
-  MPI_Bcast(&ncoultablebits,1,MPI_INT,0,world);
-  MPI_Bcast(&tabinner,1,MPI_DOUBLE,0,world);
 }
 
 /* ----------------------------------------------------------------------

@@ -446,9 +446,12 @@ void PairLJCutSoft::allocate()
 
 void PairLJCutSoft::settings(int narg, char **arg)
 {
-  if (narg != 1) error->all(FLERR,"Illegal pair_style command");
+  if (narg != 3) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = force->numeric(FLERR,arg[0]);
+  nlambda = force->numeric(FLERR,arg[0]);
+  alphalj = force->numeric(FLERR,arg[1]);
+
+  cut_global = force->numeric(FLERR,arg[2]);
 
   // reset cutoffs that have been explicitly set
 
@@ -545,10 +548,6 @@ void PairLJCutSoft::init_style()
     cut_respa = ((Respa *) update->integrate)->cutoff;
   else cut_respa = NULL;
 
-  // parameters for soft-core
-
-  nlambda = 2;
-  alphalj = 0.5;
 }
 
 /* ----------------------------------------------------------------------
@@ -579,7 +578,7 @@ double PairLJCutSoft::init_one(int i, int j)
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
   lj2[i][j] = pow(sigma[i][j], 6.0);
-  lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj3[i][j] = alphalj * pow(1.0 - lambda[i][j], nlambda);
 
   if (offset_flag) {
     double denlj = lj3[i][j] + pow(sigma[i][j] / cut[i][j], 6.0);

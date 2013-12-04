@@ -377,7 +377,7 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
 
 void PairTIP4PLongSoft::settings(int narg, char **arg)
 {
-  if (narg != 6) error->all(FLERR,"Illegal pair_style command");
+  if (narg != 8) error->all(FLERR,"Illegal pair_style command");
 
   typeO = force->inumeric(FLERR,arg[0]);
   typeH = force->inumeric(FLERR,arg[1]);
@@ -385,7 +385,10 @@ void PairTIP4PLongSoft::settings(int narg, char **arg)
   typeA = force->inumeric(FLERR,arg[3]);
   qdist = force->numeric(FLERR,arg[4]);
 
-  cut_coul = force->numeric(FLERR,arg[5]);
+  nlambda = force->numeric(FLERR,arg[5]);
+  alphac  = force->numeric(FLERR,arg[6]);
+
+  cut_coul = force->numeric(FLERR,arg[7]);
 }
 
 /* ----------------------------------------------------------------------
@@ -455,7 +458,6 @@ void PairTIP4PLongSoft::read_restart_settings(FILE *fp)
     fread(&typeA,sizeof(int),1,fp);
     fread(&qdist,sizeof(double),1,fp);
   }
-
   MPI_Bcast(&typeO,1,MPI_INT,0,world);
   MPI_Bcast(&typeH,1,MPI_INT,0,world);
   MPI_Bcast(&typeB,1,MPI_INT,0,world);

@@ -30,56 +30,68 @@
 <UL><LI>style = <I>lj/cut/soft</I> or <I>lj/cut/coul/cut/soft</I> or <I>lj/cut/coul/long/soft</I> or <I>lj/cut/tip4p/long/soft</I> or <I>coul/cut/soft</I> or <I>coul/long/soft</I> or <I>tip4p/long/soft</I>
 <LI>args = list of arguments for a particular style 
 </UL>
-<PRE>  <I>lj/cut/soft</I> args = cutoff
+<PRE>  <I>lj/cut/soft</I> args = n alpha_lj cutoff
+    n, alpha_LJ = parameters of soft-core potential
     cutoff = global cutoff for Lennard-Jones interactions (distance units)
-  <I>lj/cut/coul/cut/soft</I> args = cutoff (cutoff2)
+  <I>lj/cut/coul/cut/soft</I> args = n alpha_LJ alpha_C cutoff (cutoff2)
+    n, alpha_LJ, alpha_C = parameters of soft-core potential
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  <I>lj/cut/coul/long/soft</I> args = cutoff
+  <I>lj/cut/coul/long/soft</I> args = n alpha_LJ alpha_C cutoff
+    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  <I>lj/cut/tip4p/long/soft</I> args = otype htype btype atype qdist cutoff (cutoff2)
+  <I>lj/cut/tip4p/long/soft</I> args = otype htype btype atype qdist n alpha_LJ alpha_C cutoff (cutoff2)
     otype,htype = atom types for TIP4P O and H
     btype,atype = bond and angle types for TIP4P waters
     qdist = distance from O atom to massless charge (distance units)
+    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   <I>coul/cut/soft</I> args = cutoff
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
   <I>coul/long/soft</I> args = cutoff
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
-  <I>tip4p/long/soft</I> args = cutoff
+  <I>tip4p/long/soft</I> args = otype htype btype atype qdist n alpha_C cutoff
+    otype,htype = atom types for TIP4P O and H
+    btype,atype = bond and angle types for TIP4P waters
+    qdist = distance from O atom to massless charge (distance units)
+    n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
 
 </PRE>
 <P><B>Examples:</B>
 </P>
-<PRE>pair_style lj/cut/soft 10.0
+<PRE>pair_style lj/cut/soft 2.0 0.5 9.5
 pair_coeff * * 0.28 3.1 1.0
-pair_coeff * * 0.28 3.1 0.2 10.0 
+pair_coeff 1 1 0.28 3.1 1.0 9.5 
 </PRE>
-<PRE>pair_style lj/cut/coul/cut/soft 10.0
-pair_style lj/cut/coul/cut/soft 10.0 10.0
+<PRE>pair_style lj/cut/coul/cut/soft 2.0 0.5 10.0 9.5
+pair_style lj/cut/coul/cut/soft 2.0 0.5 10.0 9.5 9.5
 pair_coeff * * 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 1.0
+pair_coeff 1 1 0.28 3.1 0.5 10.0
+pair_coeff 1 1 0.28 3.1 0.5 10.0 9.5 
+</PRE>
+<PRE>pair_style lj/cut/coul/long/soft 2.0 0.5 10.0 9.5
+pair_style lj/cut/coul/long/soft 2.0 0.5 10.0 9.5 9.5
+pair_coeff * * 0.28 3.1 1.0
 pair_coeff 1 1 0.28 3.1 0.0 10.0
-pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 
+pair_coeff 1 1 0.28 3.1 0.0 10.0 9.5 
 </PRE>
-<PRE>pair_style lj/cut/coul/long/soft 10.0
-pair_style lj/cut/coul/long/soft 10.0 10.0
-pair_coeff * * 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 1.0
-pair_coeff 1 1 0.28 3.1 0.0 10.0
-pair_coeff 1 1 0.28 3.1 0.5 10.0 10.0 
-</PRE>
-<PRE>pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3
-pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 10.3 10.0
+<PRE>pair_style lj/cut/tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8
+pair_style lj/cut/tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8 9.5
 pair_coeff * * 0.155 3.1536 1.0
-pair_coeff 1 1 0.155 3.1536 1.0 9.0 
+pair_coeff 1 1 0.155 3.1536 1.0 9.5 
 </PRE>
-<PRE>pair_style coul/long/soft 10.0
+<PRE>pair_style coul/long/soft 1.0 10.0 9.5
 pair_coeff * * 1.0
-pair_coeff * * 1.0 10.0 
+pair_coeff 1 1 1.0 9.5 
+</PRE>
+<PRE>pair_style tip4p/long/soft 1 2 7 8 2.0 0.5 10.0 0.15 9.8
+pair_coeff * * 1.0
+pair_coeff 1 1 1.0 9.5 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -94,19 +106,23 @@ created or anihilated <A HREF = "#Beutler">(Beutler)</A>,
 </P>
 <CENTER><IMG SRC = "Eqs/pair_coul_soft.jpg">
 </CENTER>
-<P>In the Coulomb part C is an energy-conversion constant, qi and qj are
+<P>In the Coulomb part C is an energy-conversion constant, q_i and q_j are
 the charges on the 2 atoms, and epsilon is the dielectric constant
 which can be set by the <A HREF = "dielectric.html">dielectric</A> command.
 </P>
-<P>The parameter lambda is an activation parameter. When lambda = 1 the
+<P>The coefficient lambda is an activation parameter. When lambda = 1 the
 pair potentiel is identical to a Lennard-Jones term plus a Coulomb
 term. When lambda = 0 the pair interactions are deactivated. The
 transition between these two extrema is smoothed by a repulsive soft
 core in order to avoid singularities in potential energy and forces
 when sites are created or anihilated and can overlap
-<A HREF = "#Beutler">(Beutler)</A>. The remaining coefficients can have fixed
-values: n = 2, alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 is an
-appropriate choice.
+<A HREF = "#Beutler">(Beutler)</A>.
+</P>
+<P>The paratemers n, alpha_LJ and alpha_C (if a Coulomb part is
+present) are set in the <A HREF = "pair_style.html">pair_style</A> command, before
+the cutoffs.  Usual choices for the exponent are n = 2 or n = 1. For
+the remaining coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2
+are appropriate choices.
 </P>
 <P>The <I>lj/cut/tip4p/long/soft</I> implements a soft-core version of the
 TIP4P water model. Its usage is documented in the
@@ -150,10 +166,6 @@ type pair.  You cannot specify 2 cutoffs for style <I>lj/cut/soft</I>,
 since it has no Coulombic terms. For the <I>coul/cut/soft</I> and
 <I>coul/long/soft</I> only lambda and the optional cutoff2 are to be
 specified.
-</P>
-<P>The following coefficients have fixed values: n = 2, alpha_LJ = 0.5,
-alpha_C = 10 Angstrom^2 <A HREF = "#Beutler">(Beutler)</A>. To change these
-recompilation is required.
 </P>
 <HR>
 

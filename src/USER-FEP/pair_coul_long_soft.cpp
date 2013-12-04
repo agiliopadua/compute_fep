@@ -187,9 +187,12 @@ void PairCoulLongSoft::allocate()
 
 void PairCoulLongSoft::settings(int narg, char **arg)
 {
-  if (narg != 1) error->all(FLERR,"Illegal pair_style command");
+  if (narg != 3) error->all(FLERR,"Illegal pair_style command");
 
-  cut_coul = force->numeric(FLERR,arg[0]);
+  nlambda = force->numeric(FLERR,arg[0]);
+  alphac  = force->numeric(FLERR,arg[1]);
+
+  cut_coul = force->numeric(FLERR,arg[2]);
 }
 
 /* ----------------------------------------------------------------------
@@ -239,11 +242,6 @@ void PairCoulLongSoft::init_style()
  if (force->kspace == NULL)
     error->all(FLERR,"Pair style requires a KSpace style");
   g_ewald = force->kspace->g_ewald;
-
-  // parameters for soft-core
-
-  nlambda = 2;
-  alphac = 10.0 * force->angstrom * force->angstrom;
 }
 
 /* ----------------------------------------------------------------------
@@ -259,7 +257,7 @@ double PairCoulLongSoft::init_one(int i, int j)
   }
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
-  lj4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj4[i][j] = alphac * pow(1.0 - lambda[i][j], nlambda);
 
   scale[j][i] = scale[i][j];
   lambda[j][i] = lambda[i][j];
