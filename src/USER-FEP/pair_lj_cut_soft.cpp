@@ -578,7 +578,7 @@ double PairLJCutSoft::init_one(int i, int j)
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
   lj2[i][j] = pow(sigma[i][j], 6.0);
-  lj3[i][j] = alphalj * pow(1.0 - lambda[i][j], nlambda);
+  lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   if (offset_flag) {
     double denlj = lj3[i][j] + pow(sigma[i][j] / cut[i][j], 6.0);

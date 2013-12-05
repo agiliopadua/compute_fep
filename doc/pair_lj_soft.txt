@@ -93,7 +93,8 @@ created or anihilated "(Beutler)"_#Beutler,
 
 :c,image(Eqs/pair_lj_soft.jpg)
 
-Coulomb interactions are damped at short distance,
+Coulomb interactions are also damped with a soft core at short
+distance,
 
 :c,image(Eqs/pair_coul_soft.jpg)
 

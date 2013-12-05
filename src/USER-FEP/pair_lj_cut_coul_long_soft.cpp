@@ -716,9 +716,8 @@ double PairLJCutCoulLongSoft::init_one(int i, int j)
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
   lj2[i][j] = pow(sigma[i][j], 6.0);
-  double aux = pow(1.0 - lambda[i][j], nlambda);
-  lj3[i][j] = alphalj * aux;
-  lj4[i][j] = alphac  * aux;
+  lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj4[i][j] = alphac  * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   if (offset_flag) {
     double denlj = lj3[i][j] + pow(sigma[i][j] / cut_lj[i][j], 6.0);

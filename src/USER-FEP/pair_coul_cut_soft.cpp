@@ -232,7 +232,7 @@ double PairCoulCutSoft::init_one(int i, int j)
   }
 
   lj1[i][j] = pow(lambda[i][j], nlambda);
-  lj4[i][j] = alphac * pow(1.0 - lambda[i][j], nlambda);
+  lj4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   cut[j][i] = cut[i][j];
   lambda[j][i] = lambda[i][j];
