@@ -47,6 +47,8 @@ using namespace LAMMPS_NS;
 #define A4       -1.453152027
 #define A5        1.061405429
 
+#define CHKZERO
+
 /* ---------------------------------------------------------------------- */
 
 PairLJCutTIP4PLongSoft::PairLJCutTIP4PLongSoft(LAMMPS *lmp) :
@@ -473,10 +475,12 @@ double PairLJCutTIP4PLongSoft::init_one(int i, int j)
   // set LJ cutoff to 0.0 for any interaction involving water H
   // so LJ term isn't calculated in compute()
 
+#ifdef CHKZERO
   if ((i == typeH && epsilon[i][i] != 0.0) ||
       (j == typeH && epsilon[j][j] != 0.0))
     error->all(FLERR,"Water H epsilon must be 0.0 for "
                "pair style lj/cut/tip4p/long/soft");
+#endif
 
   if (i == typeH || j == typeH)
     cut_ljsq[j][i] = cut_ljsq[i][j] = 0.0;
