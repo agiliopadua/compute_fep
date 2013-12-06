@@ -1,6 +1,8 @@
 compute fep
 ===========
 
+_[Agilio Padua](http://tim.univ-bpclermont.fr/apadua)_
+
 Free energy perturbation for LAMMPS, with soft-core pair potentials.
 
 
@@ -18,9 +20,9 @@ The `compute fep` is installed as a user-package.
 
 3. Compile (the `kspace` package is required)
 
-    make yes-user-fep
+        make yes-user-fep
 
-    make 'machine'
+        make 'machine'
 
 
 Documentation

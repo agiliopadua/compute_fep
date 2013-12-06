@@ -48,10 +48,10 @@
     n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
-  <I>coul/cut/soft</I> args = cutoff
+  <I>coul/cut/soft</I> args = n alpha_C cutoff
     n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
-  <I>coul/long/soft</I> args = cutoff
+  <I>coul/long/soft</I> args = n alpha_C cutoff
     n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
   <I>tip4p/long/soft</I> args = otype htype btype atype qdist n alpha_C cutoff
@@ -119,17 +119,19 @@ core in order to avoid singularities in potential energy and forces
 when sites are created or anihilated and can overlap
 <A HREF = "#Beutler">(Beutler)</A>.
 </P>
-<P>The paratemers n, alpha_LJ and alpha_C (if a Coulomb part is
-present) are set in the <A HREF = "pair_style.html">pair_style</A> command, before
-the cutoffs.  Usual choices for the exponent are n = 2 or n = 1. For
-the remaining coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2
-are appropriate choices.
+<P>The paratemers n, alpha_LJ and alpha_C are set in the
+<A HREF = "pair_style.html">pair_style</A> command, before the cutoffs.  Usual
+choices for the exponent are n = 2 or n = 1. For the remaining
+coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 are
+appropriate choices.
 </P>
 <P>The <I>lj/cut/tip4p/long/soft</I> implements a soft-core version of the
-TIP4P water model. Its usage is documented in the
-<A HREF = "pair_lj.html">pair_lj</A> styles. The soft-core version adds the lambda
-parameter to the list of arguments, after epsilon and sigma in the
-<A HREF = "pair_coeff.html">pair_coeff</A> command.
+TIP4P water model. The usage of this pair style is documented in the
+<A HREF = "pair_lj.html">pair_lj</A> styles. The soft-core version introduces the
+lambda parameter to the list of arguments, after epsilon and sigma in
+the <A HREF = "pair_coeff.html">pair_coeff</A> command. The paratemers n, alpha_LJ
+and alpha_C are set in the <A HREF = "pair_style.html">pair_style</A> command,
+before the cutoffs.
 </P>
 <P>The <I>coul/cut/soft</I>, <I>coul/long/soft</I> and <I>tip4p/long/soft</I> substyles
 are designed to be combined with other pair potentials via the
@@ -154,10 +156,6 @@ commands, or by mixing as described below:
 <LI>cutoff1 (distance units)
 <LI>cutoff2 (distance units) 
 </UL>
-<P>Note that sigma is defined in the LJ formula as the zero-crossing
-distance for the potential, not as the energy minimum at 2^(1/6)
-sigma.
-</P>
 <P>The latter 2 coefficients are optional.  If not specified, the global
 LJ and Coulombic cutoffs specified in the pair_style command are used.
 If only one cutoff is specified, it is used as the cutoff for both LJ
@@ -195,7 +193,7 @@ to be specified in an input script that reads a restart file.
 </P>
 <P>To avoid division by zero do not set sigma = 0. When sites do not
 interact though the Lennard-Jones term use epsilon = 0 and sigma = 1
-for example, or else use the <I>coul/cut/soft</I> substyle.
+for example, or else use the <I>coul/long/soft</I> or similar substyle.
 </P>
 <P><B>Related commands:</B>
 </P>
