@@ -1,7 +1,7 @@
 compute fep examples
 ====================
 
-* `CH4hyd` -- free energy of hydration of methane.
+* `CH4hyd` -- free energy of hydration of methane (simple).
 
 * `CC-CO` -- difference in free energy of hydration upon transforming
-  ethane into methanol.
+  ethane into methanol (a bit more complex).
