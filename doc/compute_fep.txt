@@ -104,9 +104,8 @@ both the forward and reverse routes:
 
 :c,image(Eqs/compute_fep_bar.jpg)
 
-where f(x) is the Fermi function {f}({x}) = 1/(1+exp({x}/{kT})). The
-quantity C is determined by numerical root finding such that the two
-sums on the numerator and denominator are equal.
+The value of the free energy difference is determined by numerical
+root finding to establish the equality.
 
 Concerning the choice of how the atomic parameters are perturbed in
 order to setup an alchemical transformation route, several strategies
