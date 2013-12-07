@@ -44,4 +44,3 @@ value of 2.0 kcal/mol, or with a simulation value from the literature
 obtained with the same force field models used here: 2.27 kcal/mol
 [MR Shirts, VS Pande, J Chem Phys 122 (2005) 134508].
 
-

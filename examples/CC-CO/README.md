@@ -48,8 +48,12 @@ free-energy differences corresponding to the above transformations:
 
     fep.py 300 < fep10.lmp
 
-The outputs are in kcal/mol and can be compared with a simulation
-value from the literature (using a different water model): -5.3 kcal/mol
+The outputs are in kcal/mol and can be compared with the experimental
+value of -6.93 kcal/mol and with simulation
+value from the literature: and -6.7 kcal/mol
+[Jorgensen, Ravimohan, J Chem Phys 83 (1985) 3050], -6.8 kcal/mol
 [Goette, Grubmüller, J Comp Chem 30 (2007) 447].
 
-
+This example calculation is intended for tutorial purposes only. The
+results may not be of research quality (not enough sampling, no
+evaluation of ideal-gas contributions, etc.)

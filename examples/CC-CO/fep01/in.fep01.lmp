@@ -76,7 +76,7 @@ fix fSHAKE all shake 0.0001 20 ${nprint} b 2 4 5 a 6
 
 fix fNPT all npt temp ${temp} ${temp} 100 iso ${press} ${press} 500
 
-run 50000
+run 250000
 reset_timestep 0
 
 

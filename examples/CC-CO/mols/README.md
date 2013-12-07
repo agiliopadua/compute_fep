@@ -11,6 +11,5 @@ Files necessary to build starting configurations using the
 
     fftool.py 1 CC-CO.zmat 360 spce.zmat -r 50 -l -a
 
-The `in.lmp` files have to be modified to introduce the free energy
-route and the configuration in the `data.lmp` files should be
-equilibrated before proceeding to the free energy calculations.
+The resulting `in.lmp` files have to be modified to introduce the free
+energy route.
