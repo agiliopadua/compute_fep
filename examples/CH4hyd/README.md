@@ -31,9 +31,10 @@ finite-difference thermodynamic integration (FDTI):
   molecule. Results in `fdti10.lmp`
 
 The free-energy profiles can be observed by plotting the values in the
-third column of the results files. The Python scripts `fep.py`, `nti.py` and
-`fdti.py` found in the `tools` directory can be used to calculate the
-free-energy differences corresponding to the above transformations:
+third column of the results files. The Python scripts `fep.py`,
+`nti.py` and `fdti.py` found in the `tools` directory can be used to
+calculate the free-energy differences corresponding to the above
+transformations:
 
     fep.py 300 < fep01.lmp
 
