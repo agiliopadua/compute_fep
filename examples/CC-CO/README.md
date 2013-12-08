@@ -33,6 +33,10 @@ The following directories contain input files and results for
 calculations using free-energy perturbation (FEP) and
 finite-difference thermodynamic integration (FDTI):
 
+* `mols` -- Molcule description files and force field database used to
+  create the initial configurations for the simulations `data.0.lmp`
+  and `data.1.lmp`
+
 * `fep01` -- Calculation using FEP, multi-stage transformation of an
   ethane molecule in methanol. Results in `fep01.lmp`
 
@@ -49,11 +53,10 @@ free-energy differences corresponding to the above transformations:
     fep.py 300 < fep10.lmp
 
 The outputs are in kcal/mol and can be compared with the experimental
-value of -6.93 kcal/mol and with simulation
-value from the literature: and -6.7 kcal/mol
-[Jorgensen, Ravimohan, J Chem Phys 83 (1985) 3050], -6.8 kcal/mol
-[Goette, Grubmüller, J Comp Chem 30 (2007) 447].
+value of -6.93 kcal/mol and with simulation value from the literature:
+-6.7 kcal/mol [Jorgensen, Ravimohan, J Chem Phys 83 (1985) 3050], -6.8
+kcal/mol [Goette, Grubmüller, J Comp Chem 30 (2007) 447].
 
-This example calculation is intended for tutorial purposes only. The
-results may not be of research quality (not enough sampling, no
-evaluation of ideal-gas contributions, etc.)
+These example calculations are for tutorial purposes only. The results
+may not be of research quality (not enough sampling, no evaluation of
+ideal-gas contributions, etc.)

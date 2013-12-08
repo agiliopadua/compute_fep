@@ -5,7 +5,7 @@ Example calculation of the free energy of hydration of methane with
 LAMMPS using *compute fep* and *fix adapt*.
 
 Methane is represented by the 5-site OPLS-AA model (1 molecule). Water
-is represented by the 3-site SPC/E model (360 molecules). Interactions
+is represented by the 4-site TIP4P-Ew model (360 molecules). Interactions
 of sites that are being created or deleted are treated using soft-core
 verions of the Lennard-Jones and Coulomb potentials (*pair
 lj/cut/coul/long/soft*) in order to avoid singularities.
@@ -13,6 +13,10 @@ lj/cut/coul/long/soft*) in order to avoid singularities.
 The following directories contain input files and results for
 calculations using free-energy perturbation (FEP) and
 finite-difference thermodynamic integration (FDTI):
+
+* `mols` -- molecule description files and force field database used
+  to create the initial configuration used for the simulations
+  `data.lmp`
 
 * `fep01` -- Calculation using FEP, multi-stage creation of a methane
   molecule. Results in `fep01.lmp`
@@ -44,3 +48,6 @@ value of 2.0 kcal/mol, or with a simulation value from the literature
 obtained with the same force field models used here: 2.27 kcal/mol
 [MR Shirts, VS Pande, J Chem Phys 122 (2005) 134508].
 
+These example calculations are for tutorial purposes only. The
+results may not be of research quality (not enough sampling, no
+evaluation of ideal-gas contributions, etc.)
