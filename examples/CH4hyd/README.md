@@ -24,30 +24,35 @@ finite-difference thermodynamic integration (FDTI):
 * `fep10` -- Calculation using FEP, multi-stage deletion of a methane
   molecule. Results in `fep10.lmp`
 
-* `fdti01` -- Calculation using FDTI, creation of a methane
+* `fdti01` -- Calculation using TI/FDTI, creation of a methane
   molecule. Results in `fdti01.lmp`
 
-* `fdti10` -- Calculation using FDTI, deletion a methane
+* `fdti10` -- Calculation using TI/FDTI, deletion a methane
   molecule. Results in `fdti10.lmp`
 
 The free-energy profiles can be observed by plotting the values in the
-third column of the results files. The Python scripts `fep.py` and
+third column of the results files. The Python scripts `fep.py`, `nti.py` and
 `fdti.py` found in the `tools` directory can be used to calculate the
 free-energy differences corresponding to the above transformations:
-
-    fdti.py 300 0.002 < fdti01.lmp
-
-    fdti.py 300 0.002 < fdti10.lmp
 
     fep.py 300 < fep01.lmp
 
     fep.py 300 < fep10.lmp
+
+    nti.py 300 0.002 < fdti01.lmp
+
+    nti.py 300 0.002 < fdti10.lmp
+
+    fdti.py 300 0.002 < fdti01.lmp
+
+    fdti.py 300 0.002 < fdti10.lmp
 
 The outputs are in kcal/mol and can be compared with the experimental
 value of 2.0 kcal/mol, or with a simulation value from the literature
 obtained with the same force field models used here: 2.27 kcal/mol
 [MR Shirts, VS Pande, J Chem Phys 122 (2005) 134508].
 
-These example calculations are for tutorial purposes only. The
-results may not be of research quality (not enough sampling, no
+These example calculations are for tutorial purposes only. The results
+may not be of research quality (not enough sampling, size of the step
+in lambda or of the delta for numerical derivative not optimized, no
 evaluation of ideal-gas contributions, etc.)

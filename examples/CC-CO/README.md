@@ -58,5 +58,6 @@ value of -6.93 kcal/mol and with simulation value from the literature:
 kcal/mol [Goette, Grubmüller, J Comp Chem 30 (2007) 447].
 
 These example calculations are for tutorial purposes only. The results
-may not be of research quality (not enough sampling, no evaluation of
-ideal-gas contributions, etc.)
+may not be of research quality (not enough sampling, size of the step
+in lambda or of the delta for numerical derivative not optimized, no
+evaluation of ideal-gas contributions, etc.)
