@@ -390,8 +390,7 @@ void ComputeFEP::perturb_params()
         int *atype = atom->type;
         double *q = atom->q; 
         int *mask = atom->mask;
-        int natom = atom->nlocal;
-        if (force->newton) natom += atom->nghost;
+        int natom = atom->nlocal + atom->nghost;
         
         for (i = 0; i < natom; i++)
           if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)

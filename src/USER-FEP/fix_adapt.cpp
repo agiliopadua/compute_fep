@@ -380,8 +380,7 @@ void FixAdapt::change_settings()
         double *radius = atom->radius;
         double *rmass = atom->rmass;
         int *mask = atom->mask;
-        int natom = atom->nlocal;
-        if (force->newton) natom += atom->nghost;
+        int natom = atom->nlocal + atom->nghost;
 
         if (mflag == 0) {
           for (i = 0; i < natom; i++)
@@ -403,8 +402,7 @@ void FixAdapt::change_settings()
         int *atype = atom->type;
         double *q = atom->q; 
         int *mask = atom->mask;
-        int natom = atom->nlocal;
-        if (force->newton) natom += atom->nghost;
+        int natom = atom->nlocal + atom->nghost;
 
         for (i = 0; i < natom; i++)
           if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
