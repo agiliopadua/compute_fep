@@ -380,15 +380,16 @@ void FixAdapt::change_settings()
         double *radius = atom->radius;
         double *rmass = atom->rmass;
         int *mask = atom->mask;
-        int nlocal = atom->nlocal;
+        int natom = atom->nlocal;
+        if (force->newton) natom += atom->nghost;
 
         if (mflag == 0) {
-          for (i = 0; i < nlocal; i++)
+          for (i = 0; i < natom; i++)
             if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
               if (mask[i] & groupbit)
                 radius[i] = 0.5*value;
         } else {
-          for (i = 0; i < nlocal; i++)
+          for (i = 0; i < natom; i++)
             if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
               if (mask[i] & groupbit) {
                 density = rmass[i] / (4.0*MY_PI/3.0 *
@@ -402,8 +403,10 @@ void FixAdapt::change_settings()
         int *atype = atom->type;
         double *q = atom->q; 
         int *mask = atom->mask;
-        int nlocal = atom->nlocal;
-        for (i = 0; i < nlocal; i++)
+        int natom = atom->nlocal;
+        if (force->newton) natom += atom->nghost;
+
+        for (i = 0; i < natom; i++)
           if (atype[i] >= ad->ilo && atype[i] <= ad->ihi)
             if (mask[i] & groupbit) q[i] = value;
 
