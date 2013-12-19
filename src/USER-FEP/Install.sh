@@ -12,7 +12,20 @@ mode=$1
 action () {
   if (test $mode = 0) then
     rm -f ../$1
+    if (test ! -f orig.fix_adapt.cpp) then
+      mv orig.fix_adapt.h ../fix_adapt.h
+      mv orig.fix_adapt.cpp ../fix_adapt.cpp
+    fi
   elif (! cmp -s $1 ../$1) then
+    if (test -f ../fix_adapt.cpp) then
+      if (test ! -f orig.fix_adapt.cpp) then
+        mv ../fix_adapt.h orig.fix_adapt.h
+        mv ../fix_adapt.cpp orig.fix_adapt.cpp
+        echo "  backed up fix_adapt to USER-FEP/orig.fix_adapt"
+      else
+        echo "  backup USER-FEP/orig.fix_adapt present, not overwritten"
+      fi
+    fi
     if (test -z "$2" || test -e ../$2) then
       cp $1 ..
       if (test $mode = 2) then
@@ -25,19 +38,6 @@ action () {
     fi
   fi
 }
-
-
-# backup original fix_adapt
-
-if (test -f ../fix_adapt.cpp) then
-  if (test ! -f ../orig.fix_adapt.cpp) then
-    mv ../fix_adapt.cpp ../orig.fix_adapt.cpp
-    mv ../fix_adapt.h ../orig.fix_adapt.h
-    echo "backed up fix_adapt.cpp to orig.fix_adapt.cpp"
-  else
-    echo "backup orig.fix_adapt.cpp already present, not overwritten"
-  fi
-fi
 
 # all package files with no dependencies
 
