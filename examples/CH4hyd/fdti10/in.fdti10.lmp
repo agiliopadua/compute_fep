@@ -14,7 +14,6 @@ read_data data.lmp
 
 pair_style hybrid &
   lj/cut/coul/long 10.0 10.0 &
-  lj/cut/tip4p/long 3 4 2 2 0.125 10.0 10.0 &
   lj/cut/tip4p/long/soft 3 4 2 2 0.125 1 0.5 10.0 10.0 10.0
 pair_modify tail no
 kspace_style pppm 1.0e-4
@@ -22,14 +21,14 @@ kspace_style pppm 1.0e-4
 pair_coeff    1    1  lj/cut/coul/long    0.0660   3.5000  # C4H C4H
 pair_coeff    1    2  lj/cut/coul/long    0.0445   2.9580  # C4H H
 pair_coeff    2    2  lj/cut/coul/long    0.0300   2.5000  # H H
-pair_coeff    3    3  lj/cut/tip4p/long   0.1628   3.1644  # Ow Ow
-pair_coeff    3    4  lj/cut/tip4p/long   0.0000   0.0000  # Ow Hw
-pair_coeff    4    4  lj/cut/tip4p/long   0.0000   0.0000  # Hw Hw
+pair_coeff    3    3  lj/cut/tip4p/long/soft   0.1628   3.1644  1.0  # Ow Ow
+pair_coeff    3    4  lj/cut/tip4p/long/soft   0.0000   1.0000  1.0  # Ow Hw
+pair_coeff    4    4  lj/cut/tip4p/long/soft   0.0000   1.0000  1.0  # Hw Hw
 
 pair_coeff    1    3  lj/cut/tip4p/long/soft   0.1036   3.3279  1.0  # C4H Ow
-pair_coeff    1    4  lj/cut/tip4p/long/soft   0.0000   0.0000  1.0  # C4H Hw
+pair_coeff    1    4  lj/cut/tip4p/long/soft   0.0000   1.0000  1.0  # C4H Hw
 pair_coeff    2    3  lj/cut/tip4p/long/soft   0.0699   2.8126  1.0  # H Ow
-pair_coeff    2    4  lj/cut/tip4p/long/soft   0.0000   0.0000  1.0  # H Hw
+pair_coeff    2    4  lj/cut/tip4p/long/soft   0.0000   1.0000  1.0  # H Hw
 
 variable nsteps equal 2500000
 variable nprint equal ${nsteps}/500
@@ -57,20 +56,11 @@ reset_timestep 0
 
 variable lambda equal ramp(1.0,0.0)
 
-fix fADAPT all adapt 125000 &
-  pair lj/cut/tip4p/long/soft lambda 1 3 v_lambda &
-  pair lj/cut/tip4p/long/soft lambda 1 4 v_lambda &
-  pair lj/cut/tip4p/long/soft lambda 2 3 v_lambda &
-  pair lj/cut/tip4p/long/soft lambda 2 4 v_lambda &
-  after yes
+fix fADAPT all adapt 125000 pair lj/cut/tip4p/long/soft lambda 1*2 3*4 v_lambda after yes
 
 variable dlambda equal -0.002
 
-compute cFEP all fep ${temp} &
-  pair lj/cut/tip4p/long/soft lambda 1 3 v_dlambda &
-  pair lj/cut/tip4p/long/soft lambda 1 4 v_dlambda &
-  pair lj/cut/tip4p/long/soft lambda 2 3 v_dlambda &
-  pair lj/cut/tip4p/long/soft lambda 2 4 v_dlambda
+compute cFEP all fep ${temp} pair lj/cut/tip4p/long/soft lambda 1*2 3*4 v_dlambda
 
 fix fFEP all ave/time 25 4000 125000 c_cFEP[1] c_cFEP[2] file fdti10.lmp
 
