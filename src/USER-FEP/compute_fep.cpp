@@ -535,7 +535,7 @@ void ComputeFEP::backup_qfev()
 
   int nall = atom->nlocal + atom->nghost;
   int natom = atom->nlocal;
-  if (force->newton || tip4pflag)
+  if (force->newton || force->kspace->tip4pflag)
       natom += atom->nghost;
 
   if (chgflag) {
@@ -614,7 +614,7 @@ void ComputeFEP::restore_qfev()
 
   int nall = atom->nlocal + atom->nghost;
   int natom = atom->nlocal;
-  if (force->newton || tip4pflag)
+  if (force->newton || force->kspace->tip4pflag)
       natom += atom->nghost;
 
   if (chgflag) {
