@@ -45,6 +45,10 @@ for file in *.cpp *.h; do
   action $file
 done
 
+if (test -e ../orig.fix_adapt.cpp) then
+  rm -f ../orig.fix_adapt.*
+fi
+
 # restore fix adapt
 if (test $mode = 0) then
   if (test -e orig.fix_adapt.cpp) then
