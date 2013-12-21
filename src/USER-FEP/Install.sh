@@ -29,12 +29,12 @@ action () {
 # backup fix_adapt
 if (test $mode != 0) then
   if (test -e ../fix_adapt.cpp) then
-    if (test ! -e orig.fix_adapt.cpp) then
-      mv ../fix_adapt.h orig.fix_adapt.h
-      mv ../fix_adapt.cpp orig.fix_adapt.cpp
-      echo "  backed up fix_adapt to USER-FEP/orig.fix_adapt"
+    if (test ! -d ../ORIG.fix_adapt) then
+      mkdir ../ORIG.fix_adapt
+      mv ../fix_adapt.* ../ORIG.fix_adapt
+      echo "  backed up fix_adapt sources to ORIG.fix_adapt directory"
     else
-      echo "  backup USER-FEP/orig.fix_adapt present, not overwritten"
+      echo "  backup orig.fix_adapt directory present, not overwritten"
     fi
   fi
 fi
@@ -45,15 +45,11 @@ for file in *.cpp *.h; do
   action $file
 done
 
-if (test -e ../orig.fix_adapt.cpp) then
-  rm -f ../orig.fix_adapt.*
-fi
-
 # restore fix adapt
 if (test $mode = 0) then
-  if (test -e orig.fix_adapt.cpp) then
-    mv orig.fix_adapt.h ../fix_adapt.h
-    mv orig.fix_adapt.cpp ../fix_adapt.cpp
+  if (test -d ../ORIG.fix_adapt) then
+    mv -f ../ORIG.fix_adapt/* ..
+    rmdir ../ORIG.fix_adapt
     echo "  restored fix_adapt"
   fi
 fi
