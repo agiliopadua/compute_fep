@@ -11,4 +11,4 @@ Ow  Hw   cons   0.9572  4331.53
 
 ANGLES
 # i  j  k    pot    th/deg   ka/kjmol-1
-Hw  Ow  Hw   harm   104.52   317.57
+Hw  Ow  Hw   cons   104.52   317.57
