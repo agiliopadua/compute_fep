@@ -9,15 +9,15 @@
 
 <HR>
 
-<H3>fix adapt command 
+<H3>fix adapt/fep command 
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID adapt N attribute args ... keyword value ... 
+<PRE>fix ID group-ID adapt/fep N attribute args ... keyword value ... 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>adapt = style name of this fix command 
+<LI>adapt/fep = style name of this fix command 
 
 <LI>N = adapt simulation settings every this many timesteps 
 
@@ -56,24 +56,24 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>fix 1 all adapt 1 pair soft a 1 1 v_prefactor
-fix 1 all adapt 1 pair soft a 2* 3 v_prefactor
-fix 1 all adapt 1 pair lj/cut epsilon * * v_scale1 coul/cut scale 3 3 v_scale2 scale yes reset yes
-fix 1 all adapt 10 atom diameter 1 v_size 
+<PRE>fix 1 all adapt/fep 1 pair soft a 1 1 v_prefactor
+fix 1 all adapt/fep 1 pair soft a 2* 3 v_prefactor
+fix 1 all adapt/fep 1 pair lj/cut epsilon * * v_scale1 coul/cut scale 3 3 v_scale2 scale yes reset yes
+fix 1 all adapt/fep 10 atom diameter 1 v_size 
 </PRE>
 <P><B>Description:</B>
 </P>
 <P>Change or adapt one or more specific simulation attributes or settings
-over time as a simulation runs.  Pair potential and K-space and atom
-attributes which can be varied by this fix are discussed below.  Many
-other fixes can also be used to time-vary simulation parameters,
-e.g. the "fix deform" command will change the simulation box
-size/shape and the "fix move" command will change atom positions and
-velocities in a prescribed manner.  Also note that many commands allow
-variables as arguments for specific parameters, if described in that
-manner on their doc pages.  An equal-style variable can calculate a
-time-dependent quantity, so this is another way to vary a simulation
-parameter over time.
+over time as a simulation runs. 
+</P>
+<P>This is a version of the <A HREF = "fix_adapt.html">fix_adapt</A> with two
+differences, 
+</P>
+<UL><LI>It is possible to modify the charges of chosen atom types only, instead of scaling all the charges in the system.
+<LI>There is a new option <I>after</I> for better compatibility with "fixave/time". 
+</UL>
+<P>This version is suited for free energy calculations using
+<A HREF = "compute_ti.html">compute_ti</A> or <A HREF = "compute_fep.html">compute_fep</A>.
 </P>
 <P>If <I>N</I> is specified as 0, the specified attributes are only changed
 once, before the simulation begins.  This is all that is needed if the
@@ -259,7 +259,9 @@ This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "compute_ti.html">compute ti</A>
+<P><A HREF = "compute_fep.html">compute fep</A>
+<A HREF = "fix_adapt.html">fix_adapt</A>
+<A HREF = "compute_ti.html">compute ti</A>
 </P>
 <P><B>Default:</B>
 </P>

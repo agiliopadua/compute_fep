@@ -18,7 +18,7 @@
 #include "math.h"
 #include "string.h"
 #include "stdlib.h"
-#include "fix_adapt.h"
+#include "fix_adapt_fep.h"
 #include "atom.h"
 #include "comm.h"
 #include "update.h"
@@ -44,11 +44,12 @@ enum{DIAMETER,CHARGE};
 
 /* ---------------------------------------------------------------------- */
 
-FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
+FixAdaptFEP::FixAdaptFEP(LAMMPS *lmp, int narg, char **arg) :
+  Fix(lmp, narg, arg)
 {
-  if (narg < 5) error->all(FLERR,"Illegal fix adapt command");
+  if (narg < 5) error->all(FLERR,"Illegal fix adapt/fep command");
   nevery = force->inumeric(FLERR,arg[3]);
-  if (nevery < 0) error->all(FLERR,"Illegal fix adapt command");
+  if (nevery < 0) error->all(FLERR,"Illegal fix adapt/fep command");
 
   // count # of adaptations
 
@@ -57,21 +58,21 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   int iarg = 4;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"pair") == 0) {
-      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 6;
     } else if (strcmp(arg[iarg],"kspace") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 2;
     } else if (strcmp(arg[iarg],"atom") == 0) {
-      if (iarg+4 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+4 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 4;
     } else break;
   }
 
-  if (nadapt == 0) error->all(FLERR,"Illegal fix adapt command");
+  if (nadapt == 0) error->all(FLERR,"Illegal fix adapt/fep command");
   adapt = new Adapt[nadapt];
 
   // parse keywords
@@ -83,7 +84,7 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   iarg = 4;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"pair") == 0) {
-      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+6 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       adapt[nadapt].which = PAIR;
       int n = strlen(arg[iarg+1]) + 1;
       adapt[nadapt].pstyle = new char[n];
@@ -99,21 +100,21 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         n = strlen(&arg[iarg+5][2]) + 1;
         adapt[nadapt].var = new char[n];
         strcpy(adapt[nadapt].var,&arg[iarg+5][2]);
-      } else error->all(FLERR,"Illegal fix adapt command");
+      } else error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 6;
     } else if (strcmp(arg[iarg],"kspace") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       adapt[nadapt].which = KSPACE;
       if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) {
         int n = strlen(&arg[iarg+1][2]) + 1;
         adapt[nadapt].var = new char[n];
         strcpy(adapt[nadapt].var,&arg[iarg+1][2]);
-      } else error->all(FLERR,"Illegal fix adapt command");
+      } else error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 2;
     } else if (strcmp(arg[iarg],"atom") == 0) {
-      if (iarg+3 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+3 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       adapt[nadapt].which = ATOM;
       if (strcmp(arg[iarg+1],"diameter") == 0) {
         adapt[nadapt].aparam = DIAMETER;
@@ -121,14 +122,14 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       } else if (strcmp(arg[iarg+1],"charge") == 0) {
         adapt[nadapt].aparam = CHARGE; 
         chgflag = 1; 
-      } else error->all(FLERR,"Illegal fix adapt command");
+      } else error->all(FLERR,"Illegal fix adapt/fep command");
       force->bounds(arg[iarg+2],atom->ntypes,
                     adapt[nadapt].ilo,adapt[nadapt].ihi);
       if (strstr(arg[iarg+3],"v_") == arg[iarg+3]) {
         int n = strlen(&arg[iarg+3][2]) + 1;
         adapt[nadapt].var = new char[n];
         strcpy(adapt[nadapt].var,&arg[iarg+3][2]);
-      } else error->all(FLERR,"Illegal fix adapt command");
+      } else error->all(FLERR,"Illegal fix adapt/fep command");
       nadapt++;
       iarg += 4;
     } else break;
@@ -142,24 +143,24 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"reset") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       if (strcmp(arg[iarg+1],"no") == 0) resetflag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) resetflag = 1;
-      else error->all(FLERR,"Illegal fix adapt command");
+      else error->all(FLERR,"Illegal fix adapt/fep command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"scale") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       if (strcmp(arg[iarg+1],"no") == 0) scaleflag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) scaleflag = 1;
-      else error->all(FLERR,"Illegal fix adapt command");
+      else error->all(FLERR,"Illegal fix adapt/fep command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"after") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt command");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix adapt/fep command");
       if (strcmp(arg[iarg+1],"no") == 0) afterflag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) afterflag = 1;
-      else error->all(FLERR,"Illegal fix adapt command");
+      else error->all(FLERR,"Illegal fix adapt/fep command");
       iarg += 2;
-    } else error->all(FLERR,"Illegal fix adapt command");
+    } else error->all(FLERR,"Illegal fix adapt/fep command");
   }
 
   // allocate pair style arrays
@@ -172,7 +173,7 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
 /* ---------------------------------------------------------------------- */
 
-FixAdapt::~FixAdapt()
+FixAdaptFEP::~FixAdaptFEP()
 {
   for (int m = 0; m < nadapt; m++) {
     delete [] adapt[m].var;
@@ -187,7 +188,7 @@ FixAdapt::~FixAdapt()
 
 /* ---------------------------------------------------------------------- */
 
-int FixAdapt::setmask()
+int FixAdaptFEP::setmask()
 {
   int mask = 0;
   mask |= PRE_FORCE;
@@ -197,7 +198,7 @@ int FixAdapt::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixAdapt::init()
+void FixAdaptFEP::init()
 {
   int i,j;
 
@@ -210,18 +211,18 @@ void FixAdapt::init()
 
     ad->ivar = input->variable->find(ad->var);
     if (ad->ivar < 0)
-      error->all(FLERR,"Variable name for fix adapt does not exist");
+      error->all(FLERR,"Variable name for fix adapt/fep does not exist");
     if (!input->variable->equalstyle(ad->ivar))
-      error->all(FLERR,"Variable for fix adapt is invalid style");
+      error->all(FLERR,"Variable for fix adapt/fep is invalid style");
 
     if (ad->which == PAIR) {
       anypair = 1;
 
       Pair *pair = force->pair_match(ad->pstyle,1);
-      if (pair == NULL) error->all(FLERR,"Fix adapt pair style does not exist");
+      if (pair == NULL) error->all(FLERR,"Fix adapt/fep pair style does not exist");
       void *ptr = pair->extract(ad->pparam,ad->pdim);
       if (ptr == NULL) 
-        error->all(FLERR,"Fix adapt pair style param not supported");
+        error->all(FLERR,"Fix adapt/fep pair style param not supported");
 
       ad->pdim = 2;
       if (ad->pdim == 0) ad->scalar = (double *) ptr;
@@ -235,23 +236,23 @@ void FixAdapt::init()
         for (i = ad->ilo; i <= ad->ihi; i++)
           for (j = MAX(ad->jlo,i); j <= ad->jhi; j++)
             if (!pair->check_ijtype(i,j,ad->pstyle))
-              error->all(FLERR,"Fix adapt type pair range is not valid for "
+              error->all(FLERR,"Fix adapt/fep type pair range is not valid for "
                          "pair hybrid sub-style");
       }
 
     } else if (ad->which == KSPACE) {
       if (force->kspace == NULL)
-        error->all(FLERR,"Fix adapt kspace style does not exist");
+        error->all(FLERR,"Fix adapt/fep kspace style does not exist");
       kspace_scale = (double *) force->kspace->extract("scale");
 
     } else if (ad->which == ATOM) {
       if (ad->aparam == DIAMETER) {
         if (!atom->radius_flag)
-          error->all(FLERR,"Fix adapt requires atom attribute diameter");
+          error->all(FLERR,"Fix adapt/fep requires atom attribute diameter");
       }
       if (ad->aparam == CHARGE) {
         if (!atom->q_flag)
-          error->all(FLERR,"Fix adapt requires atom attribute charge");
+          error->all(FLERR,"Fix adapt/fep requires atom attribute charge");
       }
     }
   }
@@ -287,14 +288,14 @@ void FixAdapt::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixAdapt::setup_pre_force(int vflag)
+void FixAdaptFEP::setup_pre_force(int vflag)
 {
   change_settings();
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixAdapt::pre_force(int vflag)
+void FixAdaptFEP::pre_force(int vflag)
 {
   if (nevery == 0) return;
 
@@ -312,7 +313,7 @@ void FixAdapt::pre_force(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixAdapt::post_run()
+void FixAdaptFEP::post_run()
 {
   if (resetflag) restore_settings();
 }
@@ -321,7 +322,7 @@ void FixAdapt::post_run()
    change pair,kspace,atom parameters based on variable evaluation
 ------------------------------------------------------------------------- */
 
-void FixAdapt::change_settings()
+void FixAdaptFEP::change_settings()
 {
   int i,j;
 
@@ -435,7 +436,7 @@ void FixAdapt::change_settings()
    restore pair,kspace.atom parameters to original values
 ------------------------------------------------------------------------- */
 
-void FixAdapt::restore_settings()
+void FixAdaptFEP::restore_settings()
 {
   for (int m = 0; m < nadapt; m++) {
     Adapt *ad = &adapt[m];

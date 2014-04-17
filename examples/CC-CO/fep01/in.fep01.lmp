@@ -89,7 +89,7 @@ variable q4 equal  0.040*v_lambda+0.060*(1.0-v_lambda)
 variable q5 equal -0.683*v_lambda
 variable q6 equal  0.418*v_lambda
 
-fix fADAPT all adapt 125000 &
+fix fADAPT all adapt/fep 125000 &
     pair lj/cut/coul/long/soft lambda 2*3 7*8 v_minusl &
     pair lj/cut/coul/long/soft lambda 3 4 v_minusl &
     pair lj/cut/coul/long/soft lambda 4 6 v_lambda &

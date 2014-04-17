@@ -13,24 +13,24 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(adapt,FixAdapt)
+FixStyle(adapt/fep,FixAdaptFEP)
 
 #else
 
-#ifndef LMP_FIX_ADAPT_H
-#define LMP_FIX_ADAPT_H
+#ifndef LMP_FIX_ADAPT_FEP_H
+#define LMP_FIX_ADAPT_FEP_H
 
 #include "fix.h"
 
 namespace LAMMPS_NS {
 
-class FixAdapt : public Fix {
+class FixAdaptFEP : public Fix {
  public:
   int diamflag;        // 1 if atom diameters will vary, for AtomVecGranular
   int chgflag; 
 
-  FixAdapt(class LAMMPS *, int, char **);
-  ~FixAdapt();
+  FixAdaptFEP(class LAMMPS *, int, char **);
+  ~FixAdaptFEP();
   int setmask();
   void init();
   void setup_pre_force(int);

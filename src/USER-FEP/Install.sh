@@ -26,18 +26,18 @@ action () {
   fi
 }
 
-# backup fix_adapt
-if (test $mode != 0) then
-  if (test -e ../fix_adapt.cpp) then
-    if (test ! -d ../ORIG.fix_adapt) then
-      mkdir ../ORIG.fix_adapt
-      mv ../fix_adapt.* ../ORIG.fix_adapt
-      echo "  backed up fix_adapt sources to ORIG.fix_adapt directory"
-    else
-      echo "  backup orig.fix_adapt directory present, not overwritten"
-    fi
-  fi
-fi
+## backup fix_adapt
+#if (test $mode != 0) then
+#  if (test -e ../fix_adapt.cpp) then
+#    if (test ! -d ../ORIG.fix_adapt) then
+#      mkdir ../ORIG.fix_adapt
+#      mv ../fix_adapt.* ../ORIG.fix_adapt
+#      echo "  backed up fix_adapt sources to ORIG.fix_adapt directory"
+#    else
+#      echo "  backup orig.fix_adapt directory present, not overwritten"
+#    fi
+#  fi
+#fi
 
 # all package files with no dependencies
 
@@ -45,11 +45,11 @@ for file in *.cpp *.h; do
   action $file
 done
 
-# restore fix adapt
-if (test $mode = 0) then
-  if (test -d ../ORIG.fix_adapt) then
-    mv -f ../ORIG.fix_adapt/* ..
-    rmdir ../ORIG.fix_adapt
-    echo "  restored fix_adapt"
-  fi
-fi
+## restore fix adapt
+#if (test $mode = 0) then
+#  if (test -d ../ORIG.fix_adapt) then
+#    mv -f ../ORIG.fix_adapt/* ..
+#    rmdir ../ORIG.fix_adapt
+#    echo "  restored fix_adapt"
+#  fi
+#fi

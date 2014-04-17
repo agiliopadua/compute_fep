@@ -56,7 +56,7 @@ reset_timestep 0
 
 variable lambda equal ramp(1.0,0.0)
 
-fix fADAPT all adapt 125000 pair lj/cut/tip4p/long/soft lambda 1*2 3*4 v_lambda after yes
+fix fADAPT all adapt/fep 125000 pair lj/cut/tip4p/long/soft lambda 1*2 3*4 v_lambda after yes
 
 variable dlambda equal -0.05
 
