@@ -130,13 +130,15 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"tail") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal optional keyword in compute fep");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal optional keyword "
+                                    "in compute fep");
       if (strcmp(arg[iarg+1],"no") == 0) tailflag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) tailflag = 1;
       else error->all(FLERR,"Illegal optional keyword in compute fep");
       iarg += 2;
     } else if (strcmp(arg[iarg],"volume") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal optional keyword in compute fep");
+      if (iarg+2 > narg) error->all(FLERR,"Illegal optional keyword "
+                                    "in compute fep");
       if (strcmp(arg[iarg+1],"no") == 0) volumeflag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) volumeflag = 1;
       else error->all(FLERR,"Illegal optional keyword in compute fep");
@@ -208,7 +210,8 @@ void ComputeFEP::init()
       pairflag = 1;
 
       Pair *pair = force->pair_match(pert->pstyle,1);
-      if (pair == NULL) error->all(FLERR,"compute fep pair style does not exist");
+      if (pair == NULL) error->all(FLERR,"compute fep pair style "
+                                   "does not exist");
       void *ptr = pair->extract(pert->pparam,pert->pdim);
       if (ptr == NULL) 
         error->all(FLERR,"compute fep pair style param not supported");
