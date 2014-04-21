@@ -53,7 +53,7 @@ class PairLJCutCoulLongSoft : public Pair {
   double cut_coul,cut_coulsq;
   double **epsilon,**sigma, **lambda;
   double nlambda, alphalj, alphac;
-  double **lj1,**lj2,**lj3,**lj4,**offset;
+  double **lam1,**lam2,**lam3,**lam4,**offset;
   double *cut_respa;
   double qdist; // TIP4P distance O to negative charge (compatibility of cutoffs)
   double g_ewald;

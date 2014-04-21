@@ -221,8 +221,9 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
           t = 1.0 / (1.0 + EWALD_P*grij);
           erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
 
-          denc = sqrt(lj4[itype][jtype] + rsq);
-          prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
+          denc = sqrt(lam4[itype][jtype] + rsq);
+          prefactor = qqrd2e * lam1[itype][jtype] * qtmp*q[j] /
+            (denc*denc*denc);
 
           forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
           if (factor_coul < 1.0) {
@@ -359,7 +360,7 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
           }
 
           if (eflag) {
-            prefactor = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / denc;
+            prefactor = qqrd2e * lam1[itype][jtype] * qtmp*q[j] / denc;
             ecoul = prefactor*erfc;
             if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
           } else ecoul = 0.0;

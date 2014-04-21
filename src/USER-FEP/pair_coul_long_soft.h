@@ -45,7 +45,7 @@ class PairCoulLongSoft : public Pair {
   double **scale;
   double **lambda;
   double nlambda, alphac;
-  double **lj1, **lj4;
+  double **lam1, **lam4;
   double qdist; // TIP4P distance O to negative charge (compatibility of cutoffs)
   double g_ewald;
 
