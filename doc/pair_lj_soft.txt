@@ -147,7 +147,7 @@ lambda (activation parameter between 0 and 1)
 cutoff1 (distance units)
 cutoff2 (distance units) :ul
 
-The latter 2 coefficients are optional.  If not specified, the global
+The latter two coefficients are optional.  If not specified, the global
 LJ and Coulombic cutoffs specified in the pair_style command are used.
 If only one cutoff is specified, it is used as the cutoff for both LJ
 and Coulombic interactions for this type pair.  If both coefficients
@@ -191,7 +191,7 @@ for example, or else use the {coul/long/soft} or similar substyle.
 [Related commands:]
 
 "pair_coeff"_pair_coeff.html, "fix_adapt"_fix_adapt.html,
-"compute_fep"_compute_fep.html
+"fix_adapt/fep"_fix_adapt_fep.html, "compute_fep"_compute_fep.html
 
 [Default:] none
 
