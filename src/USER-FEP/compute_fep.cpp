@@ -295,11 +295,11 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(Timer::PAIR);
+    timer->stamp(TIME_PAIR);
   }
   if (force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(Timer::KSPACE);
+    timer->stamp(TIME_KSPACE);
   }
   pe0 = compute_epair();
 
@@ -308,11 +308,11 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(Timer::PAIR);
+    timer->stamp(TIME_PAIR);
   }
   if (force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(Timer::KSPACE);
+    timer->stamp(TIME_KSPACE);
   }
   pe1 = compute_epair();
 
