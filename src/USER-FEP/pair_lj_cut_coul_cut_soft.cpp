@@ -54,10 +54,10 @@ PairLJCutCoulCutSoft::~PairLJCutCoulCutSoft()
     memory->destroy(epsilon);
     memory->destroy(sigma);
     memory->destroy(lambda);
-    memory->destroy(lam1);
-    memory->destroy(lam2);
-    memory->destroy(lam3);
-    memory->destroy(lam4);
+    memory->destroy(lj1);
+    memory->destroy(lj2);
+    memory->destroy(lj3);
+    memory->destroy(lj4);
     memory->destroy(offset);
   }
 }
@@ -118,14 +118,14 @@ void PairLJCutCoulCutSoft::compute(int eflag, int vflag)
       if (rsq < cutsq[itype][jtype]) {
 
         if (rsq < cut_coulsq[itype][jtype]) {
-          denc = sqrt(lam4[itype][jtype] + rsq);
-          forcecoul = qqrd2e * lam1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
+          denc = sqrt(lj4[itype][jtype] + rsq);
+          forcecoul = qqrd2e * lj1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
         } else forcecoul = 0.0;
         
         if (rsq < cut_ljsq[itype][jtype]) {
-          r4sig6 = rsq*rsq / lam2[itype][jtype];
-          denlj = lam3[itype][jtype] + rsq*r4sig6;
-          forcelj = lam1[itype][jtype] * epsilon[itype][jtype] * 
+          r4sig6 = rsq*rsq / lj2[itype][jtype];
+          denlj = lj3[itype][jtype] + rsq*r4sig6;
+          forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
             (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
         } else forcelj = 0.0;
 
@@ -142,10 +142,10 @@ void PairLJCutCoulCutSoft::compute(int eflag, int vflag)
 
         if (eflag) {
           if (rsq < cut_coulsq[itype][jtype])
-            ecoul = factor_coul * qqrd2e * lam1[itype][jtype] * qtmp*q[j] / denc;
+            ecoul = factor_coul * qqrd2e * lj1[itype][jtype] * qtmp*q[j] / denc;
           else ecoul = 0.0;
           if (rsq < cut_ljsq[itype][jtype]) {
-            evdwl = lam1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
+            evdwl = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
               (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];
             evdwl *= factor_lj;
           } else evdwl = 0.0;
@@ -183,10 +183,10 @@ void PairLJCutCoulCutSoft::allocate()
   memory->create(epsilon,n+1,n+1,"pair:epsilon");
   memory->create(sigma,n+1,n+1,"pair:sigma");
   memory->create(lambda,n+1,n+1,"pair:lambda");
-  memory->create(lam1,n+1,n+1,"pair:lam1");
-  memory->create(lam2,n+1,n+1,"pair:lam2");
-  memory->create(lam3,n+1,n+1,"pair:lam3");
-  memory->create(lam4,n+1,n+1,"pair:lam4");
+  memory->create(lj1,n+1,n+1,"pair:lj1");
+  memory->create(lj2,n+1,n+1,"pair:lj2");
+  memory->create(lj3,n+1,n+1,"pair:lj3");
+  memory->create(lj4,n+1,n+1,"pair:lj4");
   memory->create(offset,n+1,n+1,"pair:offset");
 }
 
@@ -291,14 +291,14 @@ double PairLJCutCoulCutSoft::init_one(int i, int j)
   cut_ljsq[i][j] = cut_lj[i][j] * cut_lj[i][j];
   cut_coulsq[i][j] = cut_coul[i][j] * cut_coul[i][j];
 
-  lam1[i][j] = pow(lambda[i][j], nlambda);
-  lam2[i][j] = pow(sigma[i][j], 6.0);
-  lam3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
-  lam4[i][j] = alphac  * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj1[i][j] = pow(lambda[i][j], nlambda);
+  lj2[i][j] = pow(sigma[i][j], 6.0);
+  lj3[i][j] = alphalj * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lj4[i][j] = alphac  * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   if (offset_flag) {
-    double denlj = lam3[i][j] + pow(sigma[i][j] / cut_lj[i][j], 6.0);
-    offset[i][j] = lam1[i][j] * 4.0 * epsilon[i][j] * (1.0/(denlj*denlj) - 1.0/denlj);
+    double denlj = lj3[i][j] + pow(sigma[i][j] / cut_lj[i][j], 6.0);
+    offset[i][j] = lj1[i][j] * 4.0 * epsilon[i][j] * (1.0/(denlj*denlj) - 1.0/denlj);
   } else offset[i][j] = 0.0;
 
   epsilon[j][i] = epsilon[i][j];
@@ -306,10 +306,10 @@ double PairLJCutCoulCutSoft::init_one(int i, int j)
   lambda[j][i] = lambda[i][j];
   cut_ljsq[j][i] = cut_ljsq[i][j];
   cut_coulsq[j][i] = cut_coulsq[i][j];
-  lam1[j][i] = lam1[i][j];
-  lam2[j][i] = lam2[i][j];
-  lam3[j][i] = lam3[i][j];
-  lam4[j][i] = lam4[i][j];
+  lj1[j][i] = lj1[i][j];
+  lj2[j][i] = lj2[i][j];
+  lj3[j][i] = lj3[i][j];
+  lj4[j][i] = lj4[i][j];
   offset[j][i] = offset[i][j];
 
   // compute I,J contribution to long-range tail correction
@@ -332,9 +332,9 @@ double PairLJCutCoulCutSoft::init_one(int i, int j)
     double rc3 = cut_lj[i][j]*cut_lj[i][j]*cut_lj[i][j];
     double rc6 = rc3*rc3;
     double rc9 = rc3*rc6;
-    etail_ij = 8.0*MY_PI*all[0]*all[1]* lam1[i][j] * epsilon[i][j] *
+    etail_ij = 8.0*MY_PI*all[0]*all[1]* lj1[i][j] * epsilon[i][j] *
       sig6 * (sig6 - 3.0*rc6) / (9.0*rc9);
-    ptail_ij = 16.0*MY_PI*all[0]*all[1]* lam1[i][j] * epsilon[i][j] *
+    ptail_ij = 16.0*MY_PI*all[0]*all[1]* lj1[i][j] * epsilon[i][j] *
       sig6 * (2.0*sig6 - 3.0*rc6) / (9.0*rc9);
   }
 
@@ -474,25 +474,25 @@ double PairLJCutCoulCutSoft::single(int i, int j, int itype, int jtype,
   double denc, denlj, r4sig6;
 
   if (rsq < cut_coulsq[itype][jtype]) {
-    denc = sqrt(lam4[itype][jtype] + rsq);
-    forcecoul = force->qqrd2e * lam1[itype][jtype] * atom->q[i]*atom->q[j] /
+    denc = sqrt(lj4[itype][jtype] + rsq);
+    forcecoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] /
       (denc*denc*denc);
   } else forcecoul = 0.0;
   if (rsq < cut_ljsq[itype][jtype]) {
-    r4sig6 = rsq*rsq / lam2[itype][jtype];
-    denlj = lam3[itype][jtype] + rsq*r4sig6;
-    forcelj = lam1[itype][jtype] * epsilon[itype][jtype] * 
+    r4sig6 = rsq*rsq / lj2[itype][jtype];
+    denlj = lj3[itype][jtype] + rsq*r4sig6;
+    forcelj = lj1[itype][jtype] * epsilon[itype][jtype] * 
       (48.0*r4sig6/(denlj*denlj*denlj) - 24.0*r4sig6/(denlj*denlj));
   } else forcelj = 0.0;
   fforce = factor_coul*forcecoul + factor_lj*forcelj;
 
   double eng = 0.0;
   if (rsq < cut_coulsq[itype][jtype]) {
-    phicoul = force->qqrd2e * lam1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
+    phicoul = force->qqrd2e * lj1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
     eng += factor_coul*phicoul;
   }
   if (rsq < cut_ljsq[itype][jtype]) {
-    philj = lam1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
+    philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
       (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];
     eng += factor_lj*philj;
   }

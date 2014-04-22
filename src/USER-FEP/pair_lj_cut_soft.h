@@ -52,7 +52,7 @@ class PairLJCutSoft : public Pair {
   double **cut;
   double **epsilon,**sigma, **lambda;
   double nlambda, alphalj;
-  double **lam1,**lam2,**lam3,**offset;
+  double **lj1,**lj2,**lj3,**offset;
   double *cut_respa;
 
   void allocate();

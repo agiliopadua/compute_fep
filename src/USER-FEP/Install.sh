@@ -26,30 +26,24 @@ action () {
   fi
 }
 
-## backup fix_adapt
-#if (test $mode != 0) then
-#  if (test -e ../fix_adapt.cpp) then
-#    if (test ! -d ../ORIG.fix_adapt) then
-#      mkdir ../ORIG.fix_adapt
-#      mv ../fix_adapt.* ../ORIG.fix_adapt
-#      echo "  backed up fix_adapt sources to ORIG.fix_adapt directory"
-#    else
-#      echo "  backup orig.fix_adapt directory present, not overwritten"
-#    fi
-#  fi
-#fi
+# all package files with dependencies
 
-# all package files with no dependencies
+action compute_fep.cpp
+action compute_fep.h
+action fix_adapt_fep.cpp
+action fix_adapt_fep.h
+action pair_coul_cut_soft.cpp
+action pair_coul_cut_soft.h
+action pair_coul_long_soft.cpp          pppm.cpp
+action pair_coul_long_soft.h            pppm.cpp
+action pair_lj_cut_coul_cut_soft.cpp
+action pair_lj_cut_coul_cut_soft.h
+action pair_lj_cut_coul_long_soft.cpp   pppm.cpp
+action pair_lj_cut_coul_long_soft.h     pppm.cpp
+action pair_lj_cut_soft.cpp
+action pair_lj_cut_soft.h
+action pair_lj_cut_tip4p_long_soft.cpp  pppm_tip4p.cpp
+action pair_lj_cut_tip4p_long_soft.h    pppm_tip4p.cpp
+action pair_tip4p_long_soft.cpp         pppm_tip4p.cpp
+action pair_tip4p_long_soft.h           pppm_tip4p.cpp
 
-for file in *.cpp *.h; do
-  action $file
-done
-
-## restore fix adapt
-#if (test $mode = 0) then
-#  if (test -d ../ORIG.fix_adapt) then
-#    mv -f ../ORIG.fix_adapt/* ..
-#    rmdir ../ORIG.fix_adapt
-#    echo "  restored fix_adapt"
-#  fi
-#fi

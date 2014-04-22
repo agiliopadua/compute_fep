@@ -62,7 +62,7 @@ PairCoulLongSoft::~PairCoulLongSoft()
 
     memory->destroy(lambda);
     memory->destroy(lam1);
-    memory->destroy(lam4);
+    memory->destroy(lam2);
   }
 }
 
@@ -126,7 +126,7 @@ void PairCoulLongSoft::compute(int eflag, int vflag)
         t = 1.0 / (1.0 + EWALD_P*grij);
         erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
 
-        denc = sqrt(lam4[itype][jtype] + rsq);
+        denc = sqrt(lam2[itype][jtype] + rsq);
         prefactor = qqrd2e * lam1[itype][jtype] * qtmp*q[j] / (denc*denc*denc);
 
         forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
@@ -178,7 +178,7 @@ void PairCoulLongSoft::allocate()
 
   memory->create(lambda,n+1,n+1,"pair:lambda");
   memory->create(lam1,n+1,n+1,"pair:lam1");
-  memory->create(lam4,n+1,n+1,"pair:lam4");
+  memory->create(lam2,n+1,n+1,"pair:lam2");
 }
 
 /* ----------------------------------------------------------------------
@@ -257,12 +257,12 @@ double PairCoulLongSoft::init_one(int i, int j)
   }
 
   lam1[i][j] = pow(lambda[i][j], nlambda);
-  lam4[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
+  lam2[i][j] = alphac * (1.0 - lambda[i][j])*(1.0 - lambda[i][j]);
 
   scale[j][i] = scale[i][j];
   lambda[j][i] = lambda[i][j];
   lam1[j][i] = lam1[i][j];
-  lam4[j][i] = lam4[i][j];
+  lam2[j][i] = lam2[i][j];
 
   return cut_coul+2.0*qdist;
 }
@@ -362,7 +362,7 @@ double PairCoulLongSoft::single(int i, int j, int itype, int jtype,
     t = 1.0 / (1.0 + EWALD_P*grij);
     erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
     
-    denc = sqrt(lam4[itype][jtype] + rsq);
+    denc = sqrt(lam2[itype][jtype] + rsq);
     prefactor = force->qqrd2e * lam1[itype][jtype] * atom->q[i]*atom->q[j] /
       (denc*denc*denc);
 
@@ -373,8 +373,7 @@ double PairCoulLongSoft::single(int i, int j, int itype, int jtype,
   fforce = forcecoul;
 
   if (rsq < cut_coulsq) {
-    prefactor = force->qqrd2e * lam1[itype][jtype] * atom->q[i]*atom->q[j] /
-      denc;
+    prefactor = force->qqrd2e * lam1[itype][jtype] * atom->q[i]*atom->q[j] / denc;
     phicoul = prefactor*erfc;
     if (factor_coul < 1.0) phicoul -= (1.0-factor_coul)*prefactor;
   } else phicoul = 0.0;

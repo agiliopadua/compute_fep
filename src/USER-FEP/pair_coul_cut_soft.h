@@ -47,7 +47,7 @@ class PairCoulCutSoft : public Pair {
   double **cut;
   double **lambda;
   double nlambda, alphac;
-  double **lam1, **lam4;
+  double **lam1, **lam2;
 
   void allocate();
 };
