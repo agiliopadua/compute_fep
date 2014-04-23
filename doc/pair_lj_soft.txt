@@ -114,7 +114,10 @@ The paratemers n, alpha_LJ and alpha_C are set in the
 "pair_style"_pair_style.html command, before the cutoffs.  Usual
 choices for the exponent are n = 2 or n = 1. For the remaining
 coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 are
-appropriate choices.
+appropriate choices. Plots of the LJ and Coulomb terms are shown
+below, for lambda ranging from 1 ro 0 every 0.1. 
+
+:c,image(JPG/lj_soft.jpg),image(JPG/coul_soft.jpg)
 
 The {lj/cut/tip4p/long/soft} implements a soft-core version of the
 TIP4P water model. The usage of this pair style is documented in the
