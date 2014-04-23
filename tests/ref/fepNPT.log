@@ -1,0 +1,50 @@
+LAMMPS (12 Apr 2014)
+  orthogonal box = (-9.36391 -9.36391 -9.36391) to (9.36391 9.36391 9.36391)
+  1 by 1 by 2 MPI processor grid
+  reading atoms ...
+  649 atoms
+  reading velocities ...
+  649 velocities
+  scanning bonds ...
+  1 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  reading bonds ...
+  432 bonds
+  reading angles ...
+  216 angles
+  2 = max # of 1-2 neighbors
+  1 = max # of 1-3 neighbors
+  1 = max # of 1-4 neighbors
+  2 = max # of special neighbors
+  0 = # of size 2 clusters
+  0 = # of size 3 clusters
+  0 = # of size 4 clusters
+  216 = # of frozen angles
+PPPM initialization ...
+  G vector (1/distance) = 0.266541
+  grid = 10 10 10
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0275322
+  estimated relative force accuracy = 8.29123e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 3468 500
+FEP settings ...
+  temperature = 300.000000
+  tail no
+  lj/cut/coul/long sigma 1-1 3-3
+  1-1 charge
+Memory usage per processor = 4.68629 Mbytes
+Step TotEng E_vdwl E_coul E_long Temp Volume lambda sig13 q1 
+       0   -2000.7075    444.27231    8806.8609   -11627.051    291.37777    6568.4247            0         2.78            0 
+     100   -1992.2944    476.28619    8774.0372    -11623.29    295.61971    6565.9746          0.1        2.835          0.1 
+     200   -1972.2101    412.65227    8859.8943   -11628.302    297.85062    6586.9214          0.2         2.89          0.2 
+     300   -1950.1807    496.42096    8747.6866   -11626.393     335.5606    6494.6224          0.3        2.945          0.3 
+     400    -1986.855    483.72566    8753.8953   -11628.067    313.41762    6565.3242          0.4            3          0.4 
+     500   -2010.5566    404.02102    8837.7337   -11628.539    292.16812    6705.1653          0.5        3.055          0.5 
+     600   -2020.5684    461.01541    8759.4576   -11628.442    300.84481     6613.612          0.6         3.11          0.6 
+     700   -2033.0593    511.49226    8702.9279   -11627.668    295.24393    6483.7147          0.7        3.165          0.7 
+     800   -2057.2576    456.06199    8747.4143   -11629.176    286.12177    6541.2956          0.8         3.22          0.8 
+     900   -2083.3348    492.09633    8699.6402   -11626.535    272.93666    6527.5634          0.9        3.275          0.9 
+    1000   -2103.0631    523.37741    8625.8063   -11627.043    291.05663    6455.7156            1         3.33            1 
+Loop time of 9.98981 on 2 procs for 1000 steps with 649 atoms
