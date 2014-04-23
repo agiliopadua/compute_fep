@@ -24,7 +24,7 @@ pair_coeff    2    2  lj/cut/coul/long    0.0000   1.0000  # Hw Hw
 pair_coeff    2    3  lj/cut/coul/long    0.0000   1.0000  # Hw Ow
 pair_coeff    3    3  lj/cut/coul/long    0.1554   3.1655  # Ow Ow
 
-variable nsteps index 1000
+variable nsteps index 300
 variable nprint equal ${nsteps}/10
 variable ndump equal ${nsteps}/100
 
