@@ -5,7 +5,7 @@ if [ $# == 0 ]; then
   exit 1
 fi
 
-EXE="mpirun -np 2 mylammps"
+EXE=$@
 STEPS=300
 
 TSTSOFT="lj lj00 ljsoft-lam00 ljsoft-lam05 ljsoft-lam10 ljsoft-ovrl-lam10"\
