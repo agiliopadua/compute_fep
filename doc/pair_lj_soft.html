@@ -17,6 +17,8 @@
 </H3>
 <H3>pair_style lj/cut/tip4p/long/soft command 
 </H3>
+<H3>pair_style lj/charmm/coul/long/soft command 
+</H3>
 <H3>pair_style coul/cut/soft command 
 </H3>
 <H3>pair_style coul/long/soft command 
@@ -27,7 +29,8 @@
 </P>
 <PRE>pair_style style args 
 </PRE>
-<UL><LI>style = <I>lj/cut/soft</I> or <I>lj/cut/coul/cut/soft</I> or <I>lj/cut/coul/long/soft</I> or <I>lj/cut/tip4p/long/soft</I> or <I>coul/cut/soft</I> or <I>coul/long/soft</I> or <I>tip4p/long/soft</I>
+<UL><LI>style = <I>lj/cut/soft</I> or <I>lj/cut/coul/cut/soft</I> or
+<LI><I>lj/cut/coul/long/soft</I> or <I>lj/cut/tip4p/long/soft</I> or <I>lj/charmm/coul/long/soft</I> or <I>coul/cut/soft</I> or <I>coul/long/soft</I> or <I>tip4p/long/soft</I>
 <LI>args = list of arguments for a particular style 
 </UL>
 <PRE>  <I>lj/cut/soft</I> args = n alpha_lj cutoff
@@ -48,6 +51,10 @@
     n, alpha_LJ, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
+  <I>lj/charmm/coul/long/soft</I> args = n alpha_LJ alpha_C inner outer (cutoff)
+    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
+    inner, outer = global switching cutoffs for LJ (and Coulombic if only 5 args)
+    cutoff = global cutoff for Coulombic (optional, outer is Coulombic cutoff if only 5 args)   
   <I>coul/cut/soft</I> args = n alpha_C cutoff
     n, alpha_C = parameters of the soft-core potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
@@ -84,6 +91,11 @@ pair_coeff 1 1 0.28 3.1 0.0 10.0 9.5
 pair_style lj/cut/tip4p/long/soft 1 2 7 8 0.15 2.0 0.5 10.0 9.8 9.5
 pair_coeff * * 0.155 3.1536 1.0
 pair_coeff 1 1 0.155 3.1536 1.0 9.5 
+</PRE>
+<PRE>pair_style lj/charmm/coul/long 2.0 0.5 10.0 8.0 10.0
+pair_style lj/charmm/coul/long 2.0 0.5 10.0 8.0 10.0 9.0
+pair_coeff * * 0.28 3.1 1.0
+pair_coeff 1 1 0.28 3.1 1.0 0.14 3.1 
 </PRE>
 <PRE>pair_style coul/long/soft 1.0 10.0 9.5
 pair_coeff * * 1.0
@@ -128,24 +140,6 @@ below, for lambda ranging from 1 ro 0 every 0.1.
 </P>
 <CENTER><IMG SRC = "JPG/lj_soft.jpg"><IMG SRC = "JPG/coul_soft.jpg">
 </CENTER>
-<P>The <I>lj/cut/tip4p/long/soft</I> implements a soft-core version of the
-TIP4P water model. The usage of this pair style is documented in the
-<A HREF = "pair_lj.html">pair_lj</A> styles. The soft-core version introduces the
-lambda parameter to the list of arguments, after epsilon and sigma in
-the <A HREF = "pair_coeff.html">pair_coeff</A> command. The paratemers n, alpha_LJ
-and alpha_C are set in the <A HREF = "pair_style.html">pair_style</A> command,
-before the cutoffs.
-</P>
-<P>The <I>coul/cut/soft</I>, <I>coul/long/soft</I> and <I>tip4p/long/soft</I> substyles
-are designed to be combined with other pair potentials via the
-<A HREF = "pair_hybrid.html">pair_style hybrid/overlay</A> command.  This is because
-they have no repulsive core.  Hence, if used by themselves, there will
-be no repulsion to keep two oppositely charged particles from
-overlapping each other. In this case, if lambda = 1, a singularity may
-occur.  These substyles are suitable to represent charges embedded in
-the Lennard-Jones radius of another site (for example hydrogen atoms
-in several water models).
-</P>
 <P>For the <I>lj/cut/coul/cut/soft</I> or <I>lj/cut/coul/long/soft</I> pair styles,
 the following coefficients must be defined for each pair of atoms
 types via the <A HREF = "pair_coeff.html">pair_coeff</A> command as in the examples
@@ -168,6 +162,35 @@ type pair.  You cannot specify 2 cutoffs for style <I>lj/cut/soft</I>,
 since it has no Coulombic terms. For the <I>coul/cut/soft</I> and
 <I>coul/long/soft</I> only lambda and the optional cutoff2 are to be
 specified.
+</P>
+<P>Style <I>lj/cut/tip4p/long/soft</I> implements a soft-core version of the
+TIP4P water model. The usage of this pair style is documented in the
+<A HREF = "pair_lj.html">pair_lj</A> styles. The soft-core version introduces the
+lambda parameter to the list of arguments, after epsilon and sigma in
+the <A HREF = "pair_coeff.html">pair_coeff</A> command. The paratemers n, alpha_LJ
+and alpha_C are set in the <A HREF = "pair_style.html">pair_style</A> command,
+before the cutoffs.
+</P>
+<P>Style <I>lj/charmm/coul/long/soft</I> implements a soft-core version of the
+CHARMM version of LJ interactions with an additional switching
+function S(r) that ramps the energy and force smoothly to zero between
+an inner and outer cutoff. The usage of this pair style is documented
+in the <A HREF = "pair_charmm.html">pair_charmm</A> styles. The soft-core version
+introduces the lambda parameter to the list of arguments, after
+epsilon and sigma in the <A HREF = "pair_coeff.html">pair_coeff</A> command (and
+before the optional eps14 and sigma14). The paratemers n,
+alpha_LJ and alpha_C are set in the <A HREF = "pair_style.html">pair_style</A>
+command, before the cutoffs.
+</P>
+<P>The <I>coul/cut/soft</I>, <I>coul/long/soft</I> and <I>tip4p/long/soft</I> substyles
+are designed to be combined with other pair potentials via the
+<A HREF = "pair_hybrid.html">pair_style hybrid/overlay</A> command.  This is because
+they have no repulsive core.  Hence, if used by themselves, there will
+be no repulsion to keep two oppositely charged particles from
+overlapping each other. In this case, if lambda = 1, a singularity may
+occur.  These substyles are suitable to represent charges embedded in
+the Lennard-Jones radius of another site (for example hydrogen atoms
+in several water models).
 </P>
 <HR>
 
@@ -200,7 +223,7 @@ for example, or else use the <I>coul/long/soft</I> or similar substyle.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "pair_coeff.html">pair_coeff</A>, <A HREF = "fix_adapt.html">fix_adapt</A>,
+<P><A HREF = "pair_coeff.html">pair_coeff</A>,
 <A HREF = "fix_adapt_fep.html">fix_adapt/fep</A>, <A HREF = "compute_fep.html">compute_fep</A>
 </P>
 <P><B>Default:</B> none
