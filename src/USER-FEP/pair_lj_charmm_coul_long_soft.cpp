@@ -159,8 +159,7 @@ void PairLJCharmmCoulLongSoft::compute(int eflag, int vflag)
           if (rsq > cut_lj_innersq) {
             switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
               (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-            switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-              (rsq-cut_lj_innersq) / denom_lj;
+            switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
             philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
               (1.0/(denlj*denlj) - 1.0/denlj);
             forcelj = forcelj*switch1 + philj*switch2;
@@ -372,8 +371,7 @@ void PairLJCharmmCoulLongSoft::compute_middle()
         if (rsq > cut_lj_innersq) {
           switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
             (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-          switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-            (rsq-cut_lj_innersq) / denom_lj;
+          switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
           philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
               (1.0/(denlj*denlj) - 1.0/denlj);
           forcelj = forcelj*switch1 + philj*switch2;
@@ -505,8 +503,7 @@ void PairLJCharmmCoulLongSoft::compute_outer(int eflag, int vflag)
           if (rsq > cut_lj_innersq) {
             switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
               (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-            switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-              (rsq-cut_lj_innersq) / denom_lj;
+            switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
             philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
               (1.0/(denlj*denlj) - 1.0/denlj);
             forcelj = forcelj*switch1 + philj*switch2;
@@ -562,8 +559,7 @@ void PairLJCharmmCoulLongSoft::compute_outer(int eflag, int vflag)
             if (rsq > cut_lj_innersq) {
               switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
                 (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-              switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-                (rsq-cut_lj_innersq) / denom_lj;
+              switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
               philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
                 (1.0/(denlj*denlj) - 1.0/denlj);
               forcelj = forcelj*switch1 + philj*switch2;
@@ -574,8 +570,7 @@ void PairLJCharmmCoulLongSoft::compute_outer(int eflag, int vflag)
             if (rsq > cut_lj_innersq) {
               switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
                 (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-              switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-                (rsq-cut_lj_innersq) / denom_lj;
+              switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
               philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
                 (1.0/(denlj*denlj) - 1.0/denlj);
               forcelj = forcelj*switch1 + philj*switch2;
@@ -783,7 +778,8 @@ double PairLJCharmmCoulLongSoft::init_one(int i, int j)
                                sigma[i][i],sigma[j][j]);
     sigma[i][j] = mix_distance(sigma[i][i],sigma[j][j]);
     if (lambda[i][i] != lambda[j][j])
-      error->all(FLERR,"Pair lj/cut/coul/long/soft different lambda values in mix");
+      error->all(FLERR,"Pair lj/charmm/coul/long/soft different lambda values in mix");
+    lambda[i][j] = lambda[i][i];
     eps14[i][j] = mix_energy(eps14[i][i],eps14[j][j],
                                sigma14[i][i],sigma14[j][j]);
     sigma14[i][j] = mix_distance(sigma14[i][i],sigma14[j][j]);
@@ -802,6 +798,9 @@ double PairLJCharmmCoulLongSoft::init_one(int i, int j)
   lj14_3[i][j] = 4.0 * eps14[i][j] * pow(sigma14[i][j],12.0);
   lj14_4[i][j] = 4.0 * eps14[i][j] * pow(sigma14[i][j],6.0);
 
+  epsilon[j][i] = epsilon[i][j];
+  sigma[j][i] = sigma[i][j];
+  lambda[j][i] = lambda[i][j];
   lj1[j][i] = lj1[i][j];
   lj2[j][i] = lj2[i][j];
   lj3[j][i] = lj3[i][j];
@@ -964,6 +963,7 @@ double PairLJCharmmCoulLongSoft::single(int i, int j, int itype, int jtype,
     forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
     if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
   } else forcecoul = 0.0;
+
   if (rsq < cut_ljsq) {
     r4sig6 = rsq*rsq / lj2[itype][jtype];
     denlj = lj3[itype][jtype] + rsq*r4sig6;
@@ -972,8 +972,7 @@ double PairLJCharmmCoulLongSoft::single(int i, int j, int itype, int jtype,
     if (rsq > cut_lj_innersq) {
       switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
         (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;
-      switch2 = 12.0*rsq * (cut_ljsq-rsq) *
-        (rsq-cut_lj_innersq) / denom_lj;
+      switch2 = 12.0 * (cut_ljsq-rsq) * (rsq-cut_lj_innersq) / denom_lj;
       philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] * 
         (1.0/(denlj*denlj) - 1.0/denlj);
       forcelj = forcelj*switch1 + philj*switch2;
