@@ -9,16 +9,12 @@ Free energy perturbation for LAMMPS, with soft-core pair potentials.
 Installation
 ------------
 
-The `compute fep` is installed as a user-package.
+The `compute fep`, the `fix adapt/fep` and several soft-core `pair styles`
+are included in the LAMMPS distribution (main code and also the
+LAMMPS-ICMS version) as the USER-FEP package. The `kspace` package is
+required.
 
-1. Copy the `src/USER-FEP` directory to `lammps/src/USER-FEP`.
-
-2. You may want to keep a backup of the original `fix_adapt.h` and
-   `fix_adapt.cpp`, although the version included here is more flexible.
-
-2. Add `user-fep` to the `PACKUSER` variable in `lammps/src/Makefile`
-
-3. Compile (the `kspace` package is required)
+To compile the USER-FEP package, cd to `lammps/src`:
 
         make yes-user-fep
 
@@ -28,7 +24,7 @@ The `compute fep` is installed as a user-package.
 Documentation
 -------------
 
-The `compute fep`, a modified `fix adapt` and the soft-core `pair
+The `compute fep`, the `fix adapt/fep` and the soft-core `pair
 styles` have their documentation pages in the the `doc` directory.
 
 Some examples are provided.
