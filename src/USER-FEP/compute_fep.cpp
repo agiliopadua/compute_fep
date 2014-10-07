@@ -28,6 +28,8 @@
 #include "pair_hybrid.h"
 #include "kspace.h"
 #include "input.h"
+#include "fix.h"
+#include "modify.h"
 #include "variable.h"
 #include "timer.h"
 #include "memory.h"
@@ -159,6 +161,7 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
 
   allocate_storage();
 
+  fixgpu = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -189,6 +192,9 @@ void ComputeFEP::init()
   if (!fepinitflag)    // avoid init to run entirely when called by write_data
       fepinitflag = 1;
   else return;
+
+  // when using kspace, we need to recompute some additional parameters in kspace->setup()
+  if (force->kspace) force->kspace->qsum_update_flag = 1;
 
   // setup and error checks
 
@@ -244,6 +250,11 @@ void ComputeFEP::init()
                  "compute tail corrections");
   }
 
+  // detect if package gpu is present
+
+  int ifixgpu = modify->find_fix("package_gpu");
+  if (ifixgpu >= 0) fixgpu = modify->fix[ifixgpu];
+
   if (comm->me == 0) {
     if (screen) {
       fprintf(screen, "FEP settings ...\n");
@@ -295,12 +306,16 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
+    timer->stamp(Timer::PAIR);
   }
-  if (force->kspace && force->kspace->compute_flag) {
+  if (chgflag && force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
+    timer->stamp(Timer::KSPACE);
   }
+
+  // accumulate force/energy/virial from /gpu pair styles
+  if (fixgpu) fixgpu->post_force(0);
+
   pe0 = compute_epair();
 
   perturb_params();
@@ -308,12 +323,18 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
+    timer->stamp(Timer::PAIR);
   }
-  if (force->kspace && force->kspace->compute_flag) {
+  if (chgflag && force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
+    timer->stamp(Timer::KSPACE);
   }
+
+  // accumulate force/energy/virial from /gpu pair styles
+  // this is required as to empty the answer queue, 
+  // otherwise the force compute on the GPU in the next step would be incorrect
+  if (fixgpu) fixgpu->post_force(0);
+    
   pe1 = compute_epair();
 
   restore_qfev();   // restore charge, force, energy, virial array values
@@ -421,6 +442,8 @@ void ComputeFEP::perturb_params()
   // and also offset and tail corrections
 
   if (pairflag) force->pair->reinit();
+
+  if (chgflag && force->kspace) force->kspace->setup();
 }
 
 
@@ -491,6 +514,8 @@ void ComputeFEP::restore_params()
   // and also offset and tail corrections
 
   if (pairflag) force->pair->reinit();
+
+  if (chgflag && force->kspace) force->kspace->setup();
 }
 
 
@@ -501,14 +526,15 @@ void ComputeFEP::restore_params()
 void ComputeFEP::allocate_storage()
 {
   nmax = atom->nmax;
-  if (chgflag)
-    memory->create(q_orig,nmax,"fep:q_orig");
   memory->create(f_orig,nmax,3,"fep:f_orig");
   memory->create(peatom_orig,nmax,"fep:peatom_orig");
   memory->create(pvatom_orig,nmax,6,"fep:pvatom_orig");
-  if (force->kspace) {
-    memory->create(keatom_orig,nmax,"fep:keatom_orig");
-    memory->create(kvatom_orig,nmax,6,"fep:kvatom_orig");
+  if (chgflag) {
+    memory->create(q_orig,nmax,"fep:q_orig");
+    if (force->kspace) {
+      memory->create(keatom_orig,nmax,"fep:keatom_orig");
+      memory->create(kvatom_orig,nmax,6,"fep:kvatom_orig");
+    }
   }
 }
 
@@ -516,14 +542,15 @@ void ComputeFEP::allocate_storage()
 
 void ComputeFEP::deallocate_storage()
 {
-  if (chgflag)
-    memory->destroy(q_orig);
   memory->destroy(f_orig);
   memory->destroy(peatom_orig);
   memory->destroy(pvatom_orig);
-  if (force->kspace) {
-    memory->destroy(keatom_orig);
-    memory->destroy(kvatom_orig);
+  if (chgflag) {
+    memory->destroy(q_orig);
+    if (force->kspace) {
+      memory->destroy(keatom_orig);
+      memory->destroy(kvatom_orig);
+    }
   }
 }
 
@@ -540,12 +567,6 @@ void ComputeFEP::backup_qfev()
   int natom = atom->nlocal;
   if (force->newton || force->kspace->tip4pflag)
       natom += atom->nghost;
-
-  if (chgflag) {
-    double *q = atom->q; 
-    for (i = 0; i < nall; i++)
-      q_orig[i] = q[i];
-  }
 
   double **f = atom->f;
   for (i = 0; i < natom; i++) {
@@ -581,29 +602,35 @@ void ComputeFEP::backup_qfev()
     }
   }
 
-  if (force->kspace) {
-    energy_orig = force->kspace->energy;
-    kvirial_orig[0] = force->kspace->virial[0];
-    kvirial_orig[1] = force->kspace->virial[1];
-    kvirial_orig[2] = force->kspace->virial[2];
-    kvirial_orig[3] = force->kspace->virial[3];
-    kvirial_orig[4] = force->kspace->virial[4];
-    kvirial_orig[5] = force->kspace->virial[5];
-    
-    if (update->eflag_atom) {
-      double *keatom = force->kspace->eatom;
-      for (i = 0; i < natom; i++)
-        keatom_orig[i] = keatom[i];
-    }
-    if (update->vflag_atom) {
-      double **kvatom = force->kspace->vatom;
-      for (i = 0; i < natom; i++) {
-        kvatom_orig[i][0] = kvatom[i][0];
-        kvatom_orig[i][1] = kvatom[i][1];
-        kvatom_orig[i][2] = kvatom[i][2];
-        kvatom_orig[i][3] = kvatom[i][3];
-        kvatom_orig[i][4] = kvatom[i][4];
-        kvatom_orig[i][5] = kvatom[i][5];
+  if (chgflag) {
+    double *q = atom->q; 
+    for (i = 0; i < nall; i++)
+      q_orig[i] = q[i];
+
+    if (force->kspace) {
+      energy_orig = force->kspace->energy;
+      kvirial_orig[0] = force->kspace->virial[0];
+      kvirial_orig[1] = force->kspace->virial[1];
+      kvirial_orig[2] = force->kspace->virial[2];
+      kvirial_orig[3] = force->kspace->virial[3];
+      kvirial_orig[4] = force->kspace->virial[4];
+      kvirial_orig[5] = force->kspace->virial[5];
+      
+      if (update->eflag_atom) {
+        double *keatom = force->kspace->eatom;
+        for (i = 0; i < natom; i++)
+          keatom_orig[i] = keatom[i];
+      }
+      if (update->vflag_atom) {
+        double **kvatom = force->kspace->vatom;
+        for (i = 0; i < natom; i++) {
+          kvatom_orig[i][0] = kvatom[i][0];
+          kvatom_orig[i][1] = kvatom[i][1];
+          kvatom_orig[i][2] = kvatom[i][2];
+          kvatom_orig[i][3] = kvatom[i][3];
+          kvatom_orig[i][4] = kvatom[i][4];
+          kvatom_orig[i][5] = kvatom[i][5];
+        }
       }
     }
   }
@@ -619,12 +646,6 @@ void ComputeFEP::restore_qfev()
   int natom = atom->nlocal;
   if (force->newton || force->kspace->tip4pflag)
       natom += atom->nghost;
-
-  if (chgflag) {
-    double *q = atom->q; 
-    for (i = 0; i < nall; i++)
-      q[i] = q_orig[i];
-  }
 
   double **f = atom->f;
   for (i = 0; i < natom; i++) {
@@ -660,29 +681,35 @@ void ComputeFEP::restore_qfev()
     }
   }
 
-  if (force->kspace) {
-    force->kspace->energy = energy_orig;
-    force->kspace->virial[0] = kvirial_orig[0];
-    force->kspace->virial[1] = kvirial_orig[1];
-    force->kspace->virial[2] = kvirial_orig[2];
-    force->kspace->virial[3] = kvirial_orig[3];
-    force->kspace->virial[4] = kvirial_orig[4];
-    force->kspace->virial[5] = kvirial_orig[5];
+  if (chgflag) {
+    double *q = atom->q; 
+    for (i = 0; i < nall; i++)
+      q[i] = q_orig[i];
+
+    if (force->kspace) {
+      force->kspace->energy = energy_orig;
+      force->kspace->virial[0] = kvirial_orig[0];
+      force->kspace->virial[1] = kvirial_orig[1];
+      force->kspace->virial[2] = kvirial_orig[2];
+      force->kspace->virial[3] = kvirial_orig[3];
+      force->kspace->virial[4] = kvirial_orig[4];
+      force->kspace->virial[5] = kvirial_orig[5];
     
-    if (update->eflag_atom) {
-      double *keatom = force->kspace->eatom;
-      for (i = 0; i < natom; i++)
-        keatom[i] = keatom_orig[i];
-    }
-    if (update->vflag_atom) {
-      double **kvatom = force->kspace->vatom;
-      for (i = 0; i < natom; i++) {
-        kvatom[i][0] = kvatom_orig[i][0];
-        kvatom[i][1] = kvatom_orig[i][1];
-        kvatom[i][2] = kvatom_orig[i][2];
-        kvatom[i][3] = kvatom_orig[i][3];
-        kvatom[i][4] = kvatom_orig[i][4];
-        kvatom[i][5] = kvatom_orig[i][5];
+      if (update->eflag_atom) {
+        double *keatom = force->kspace->eatom;
+        for (i = 0; i < natom; i++)
+          keatom[i] = keatom_orig[i];
+      }
+      if (update->vflag_atom) {
+        double **kvatom = force->kspace->vatom;
+        for (i = 0; i < natom; i++) {
+          kvatom[i][0] = kvatom_orig[i][0];
+          kvatom[i][1] = kvatom_orig[i][1];
+          kvatom[i][2] = kvatom_orig[i][2];
+          kvatom[i][3] = kvatom_orig[i][3];
+          kvatom[i][4] = kvatom_orig[i][4];
+          kvatom[i][5] = kvatom_orig[i][5];
+        }
       }
     }
   }

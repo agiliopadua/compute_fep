@@ -288,6 +288,9 @@ void FixAdaptFEP::init()
     for (int i = 0; i < nadapt; i++)
       if (adapt[i].which == ATOM) 
         error->all(FLERR,"Cannot use dynamic group with fix adapt/fep atom");
+
+  // when using kspace, we need to recompute some additional parameters in kspace->setup()
+  if (force->kspace) force->kspace->qsum_update_flag = 1;
   
   // setup and error checks
 
@@ -502,8 +505,10 @@ void FixAdaptFEP::change_settings()
   // and also offset and tail corrections
 
   if (anypair) force->pair->reinit();
-}
 
+  if (chgflag && force->kspace) force->kspace->setup();
+
+}
 
 /* ----------------------------------------------------------------------
    restore pair,kspace.atom parameters to original values
@@ -555,4 +560,6 @@ void FixAdaptFEP::restore_settings()
   }
 
   if (anypair) force->pair->reinit();
+
+  if (chgflag && force->kspace) force->kspace->setup();
 }
