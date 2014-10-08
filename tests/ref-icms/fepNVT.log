@@ -51,5 +51,5 @@ WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:291)
      270   -2011.7804   -2442.8833    431.39367    8784.5437   -11658.821    334.78255          0.9        3.275          0.9 
      300   -2021.8243    -2438.471    469.91794    8753.9027   -11662.292    323.55631            1         3.33            1 
 
-Loop time of 3.4247 on 1 procs for 300 steps with 649 atoms
+Loop time of 3.4043 on 1 procs for 300 steps with 649 atoms
 99.9% CPU use with 1 MPI tasks x 1 OpenMP threads

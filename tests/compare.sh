@@ -2,7 +2,7 @@
 
 . ./defs.sh
 
-for tst in ${TSTSOFT} ${TSTFEP}; do
+for tst in ${TSTSOFT} ${TSTADAPT}; do
   ${DIFFEXE} ${DIFFOPT} ${tst}.log ${REFDIR}/${tst}.log 
 done
 

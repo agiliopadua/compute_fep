@@ -43,5 +43,5 @@ Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press
      270   -684.37957   -1272.9189    588.53931    153.77436    10137.202   -11563.895    457.04338   -473.89362 
      300   -772.23423   -1357.7977    585.56345    162.90922    10041.194   -11561.901    454.73241   -886.26954 
 
-Loop time of 0.998469 on 1 procs for 300 steps with 649 atoms
-99.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+Loop time of 0.984623 on 1 procs for 300 steps with 649 atoms
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads

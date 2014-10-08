@@ -9,14 +9,9 @@ EXE=$@
 
 . ./defs.sh
 
-for tst in ${TSTSOFT}; do
+for tst in ${TSTSOFT} ${TSTADAPT} ${TSTFEP}; do
   echo ${tst}
-  ${EXE} -in ${tst}.in -log ${tst}.log -var nsteps ${STEPS} \
+  ${EXE} -in ${tst}.lmp -log ${tst}.log -var nsteps ${STEPS} \
      -echo none -screen none
 done
 
-for tst in ${TSTFEP}; do
-  echo ${tst}
-  ${EXE} -in ${tst}.in -log ${tst}.log -var nsteps ${STEPS} \
-     -echo none -screen none
-done
