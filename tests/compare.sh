@@ -1,19 +1,12 @@
 #!/bin/bash
 
-DIFFEXE=lmp_diff
-DIFFOPT=numbers
-
-TSTSOFT="lj lj00 ljsoft-lam00 ljsoft-lam05 ljsoft-lam10 ljsoft-ovrl-lam10"\
-" tip4p tip4p00 tip4psoft-lam00 tip4psoft-lam05 tip4psoft-lam10"\
-" tip4psoft-ovrl-lam10 charmm charmmsoft-lam10 ljsoft-lam10-omp"
-
-TSTFEP="fepNVT fepNPT"
+. ./defs.sh
 
 for tst in ${TSTSOFT} ${TSTFEP}; do
-  ${DIFFEXE} ${DIFFOPT} ${tst}.log ref/${tst}.log 
+  ${DIFFEXE} ${DIFFOPT} ${tst}.log ${REFDIR}/${tst}.log 
 done
 
 for tst in ${TSTFEP}; do
-  ${DIFFEXE} ${DIFFOPT} ${tst}.log ref/${tst}.log 
-  ${DIFFEXE} ${DIFFOPT} ${tst}.out ref/${tst}.out 
+  ${DIFFEXE} ${DIFFOPT} ${tst}.log ${REFDIR}/${tst}.log 
+  ${DIFFEXE} ${DIFFOPT} ${tst}.out ${REFDIR}/${tst}.out 
 done

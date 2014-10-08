@@ -1,0 +1,47 @@
+LAMMPS (30 Sep 2014-ICMS)
+WARNING: OMP_NUM_THREADS environment is not set. (../comm.cpp:88)
+  using 1 OpenMP thread(s) per MPI task
+  orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  649 atoms
+  scanning bonds ...
+  1 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  reading bonds ...
+  432 bonds
+  reading angles ...
+  216 angles
+  2 = max # of 1-2 neighbors
+  1 = max # of 1-3 neighbors
+  1 = max # of 1-4 neighbors
+  2 = max # of special neighbors
+  0 = # of size 2 clusters
+  0 = # of size 3 clusters
+  0 = # of size 4 clusters
+  216 = # of frozen angles
+PPPM initialization ...
+  G vector (1/distance) = 0.265649
+  grid = 12 12 12
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0216175
+  estimated relative force accuracy = 6.51006e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 6859 1728
+Memory usage per processor = 7.23959 Mbytes
+Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press 
+       0    467.31541   -112.15406    579.46947   -117.93353    11459.985   -11454.205          450   -1337.8399 
+      30    151.05695   -643.07934    794.13628   -128.49329    11036.991   -11551.577    616.70432   -2726.6261 
+      60    63.201786   -737.10105    800.30284   -118.91924    10926.869   -11545.051    621.49309   -3108.5065 
+      90   -37.887469   -848.46674    810.57927   -66.126909    10775.543   -11557.883    629.47349   -2664.9662 
+     120   -150.32209   -886.13105    735.80896  -0.55965791    10666.755   -11552.326    571.40893   -1433.5707 
+     150   -260.50315    -1038.755     778.2519     49.01865    10470.013   -11557.787    604.36895   -1242.2429 
+     180   -376.38728   -1082.0821    705.69484    112.41071    10373.002   -11567.495    548.02313   -191.76615 
+     210   -488.66676   -1195.8243    707.15758    110.36176     10255.74   -11561.926    549.15906   -782.06816 
+     240   -592.21999   -1216.3392    624.11923    130.35723    10220.785   -11567.481    484.67377   -356.98624 
+     270   -684.38395   -1272.9233    588.53931    153.76998    10137.202   -11563.895    457.04338   -473.94485 
+     300   -772.23861   -1357.8021    585.56345    162.90484    10041.194   -11561.901    454.73241   -886.32077 
+
+Loop time of 0.984095 on 1 procs for 300 steps with 649 atoms
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
