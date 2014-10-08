@@ -194,7 +194,7 @@ void ComputeFEP::init()
   else return;
 
   // when using kspace, we need to recompute some additional parameters in kspace->setup()
-  if (force->kspace) force->kspace->qsum_update_flag = 1;
+  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
 
   // setup and error checks
 
@@ -306,11 +306,11 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
+    timer->stamp(Timer::PAIR);
   }
   if (chgflag && force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
+    timer->stamp(Timer::KSPACE);
   }
 
   // accumulate force/energy/virial from /gpu pair styles
@@ -323,11 +323,11 @@ void ComputeFEP::compute_vector()
   timer->stamp();
   if (force->pair && force->pair->compute_flag) {
     force->pair->compute(1,0);
-    timer->stamp(TIME_PAIR);
+    timer->stamp(Timer::PAIR);
   }
   if (chgflag && force->kspace && force->kspace->compute_flag) {
     force->kspace->compute(1,0);
-    timer->stamp(TIME_KSPACE);
+    timer->stamp(Timer::KSPACE);
   }
 
   // accumulate force/energy/virial from /gpu pair styles
@@ -372,7 +372,7 @@ double ComputeFEP::compute_epair()
     eng_pair += force->pair->etail / volume;
   }
 
-  if (force->kspace) eng_pair += force->kspace->energy;
+  if (chgflag && force->kspace) eng_pair += force->kspace->energy;
 
   return eng_pair;
 }
