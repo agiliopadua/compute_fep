@@ -41,9 +41,6 @@ using namespace LAMMPS_NS;
 enum{PAIR,ATOM};
 enum{CHARGE};
 
-#undef FEP_DEBUG
-#undef FEP_MAXDEBUG
-
 /* ---------------------------------------------------------------------- */
 
 ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
@@ -68,11 +65,13 @@ ComputeFEP::ComputeFEP(LAMMPS *lmp, int narg, char **arg) :
   int iarg = 4;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"pair") == 0) {
-      if (iarg+6 > narg) error->all(FLERR,"Illegal pair attribute in compute fep");
+      if (iarg+6 > narg) error->all(FLERR,
+                                    "Illegal pair attribute in compute fep");
       npert++;
       iarg += 6;
     } else if (strcmp(arg[iarg],"atom") == 0) {
-      if (iarg+4 > narg) error->all(FLERR,"Illegal atom attribute in compute fep");
+      if (iarg+4 > narg) error->all(FLERR,
+                                    "Illegal atom attribute in compute fep");
       npert++;
       iarg += 4;
     } else break;
@@ -345,12 +344,6 @@ void ComputeFEP::compute_vector()
   vector[2] = domain->xprd * domain->yprd * domain->zprd;
   if (volumeflag)
     vector[1] *= vector[2];
-
-#ifdef FEP_DEBUG
-  if (comm->me == 0 && screen)
-    fprintf(screen, "FEP U0 = %f  U1 = %f  DU = %f  exp(-DU/kT) = %f\n",
-            pe0,pe1,vector[0],vector[1]);
-#endif
 }
 
 
@@ -395,18 +388,6 @@ void ComputeFEP::perturb_params()
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array[i][j] = pert->array_orig[i][j] + delta;
-      
-#ifdef FEP_MAXDEBUG
-      if (comm->me == 0 && screen) {
-        fprintf(screen, "###FEP change %s %s, delta = %f\n",
-                pert->pstyle, pert->pparam, delta);
-        fprintf(screen, "###FEP  I  J   old_param new_param\n");
-        for (i = pert->ilo; i <= pert->ihi; i++)
-          for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
-            fprintf(screen, "###FEP %2d %2d %9.5f %9.5f\n", i, j, 
-                    pert->array_orig[i][j], pert->array[i][j]);
-      }
-#endif
 
     } else if (pert->which == ATOM) {
 
@@ -420,18 +401,6 @@ void ComputeFEP::perturb_params()
           if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
             if (mask[i] & groupbit)
               q[i] += delta; 
-
-#ifdef FEP_MAXDEBUG
-        if (comm->me == 0 && screen) {
-          fprintf(screen, "###FEP change charge, delta = %f\n", delta);
-          fprintf(screen, "###FEP  atom  I   old_q     new_q\n");
-          for (i = 0; i < atom->nlocal; i++)
-            if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
-              if (mask[i] & groupbit)
-                fprintf(screen, "###FEP %5d %2d %9.5f %9.5f\n", i, atype[i],
-                        q_orig[i], q[i]);
-        }
-#endif
 
       }
     }
@@ -480,33 +449,7 @@ void ComputeFEP::restore_params()
       for (i = pert->ilo; i <= pert->ihi; i++)
         for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
           pert->array[i][j] = pert->array_orig[i][j];
-
-#ifdef FEP_MAXDEBUG
-      if (comm->me == 0 && screen) {
-        fprintf(screen, "###FEP restore %s %s\n", pert->pstyle, pert->pparam);
-        fprintf(screen, "###FEP  I  J   param\n");
-        for (i = pert->ilo; i <= pert->ihi; i++)
-          for (j = MAX(pert->jlo,i); j <= pert->jhi; j++)
-            fprintf(screen, "###FEP %2d %2d %9.5f\n", i, j, pert->array[i][j]);
-      }
-#endif
     }
-#ifdef FEP_MAXDEBUG
-    if (pert->which == ATOM) {
-      if (comm->me == 0 && screen) {
-        int *atype = atom->type;
-        double *q = atom->q; 
-        int *mask = atom->mask;
-        int natom = atom->nlocal;
-        fprintf(screen, "###FEP restore charge\n");
-        fprintf(screen, "###FEP  atom  I   q\n");
-        for (i = 0; i < natom; i++)
-          if (atype[i] >= pert->ilo && atype[i] <= pert->ihi)
-            if (mask[i] & groupbit)
-              fprintf(screen, "###FEP %5d %2d %9.5f\n", i, atype[i], q[i]);
-      }
-    }
-#endif
   }
 
   // re-initialize pair styles if any PAIR settings were changed
