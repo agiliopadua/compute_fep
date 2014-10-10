@@ -188,6 +188,9 @@ FixAdaptFEP::~FixAdaptFEP()
   }
   delete [] adapt;
 
+  // this is tricky since other fixes or computes may need it set
+  // if (chgflag && force->kspace) force->kspace->qsum_update_flag = 0;
+
   // check nfix in case all fixes have already been deleted
 
   if (id_fix_diam && modify->nfix) modify->delete_fix(id_fix_diam);
@@ -289,9 +292,6 @@ void FixAdaptFEP::init()
       if (adapt[i].which == ATOM) 
         error->all(FLERR,"Cannot use dynamic group with fix adapt/fep atom");
 
-  // when using kspace, we need to recompute some additional parameters in kspace->setup()
-  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
-  
   // setup and error checks
 
   anypair = 0;
@@ -367,6 +367,11 @@ void FixAdaptFEP::init()
     }
   }
 
+  // when adapting charge and using kspace, 
+  // need to recompute additional params in kspace->setup()
+
+  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
+  
   // fixes that store initial per-atom values
   
   if (id_fix_diam) {
@@ -451,6 +456,8 @@ void FixAdaptFEP::change_settings()
     } else if (ad->which == KSPACE) {
       *kspace_scale = value;
 
+    // set per atom values, also make changes for ghost atoms
+
     } else if (ad->which == ATOM) {
 
       // reset radius from diameter
@@ -506,8 +513,10 @@ void FixAdaptFEP::change_settings()
 
   if (anypair) force->pair->reinit();
 
-  if (chgflag && force->kspace) force->kspace->setup();
+  // re-setup KSpace if it exists and adapting charges
+  // since charges have changed
 
+  if (chgflag && force->kspace) force->kspace->setup();
 }
 
 /* ----------------------------------------------------------------------
@@ -560,6 +569,5 @@ void FixAdaptFEP::restore_settings()
   }
 
   if (anypair) force->pair->reinit();
-
   if (chgflag && force->kspace) force->kspace->setup();
 }
