@@ -1,4 +1,4 @@
-LAMMPS (29 Aug 2014)
+LAMMPS (9 Oct 2014)
 WARNING: OMP_NUM_THREADS environment is not set. (../comm.cpp:88)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
@@ -22,4 +22,4 @@ WARNING: OMP_NUM_THREADS environment is not set. (../comm.cpp:88)
   0 = # of size 4 clusters
   216 = # of frozen angles
 PPPM initialization ...
-ERROR: KSpace style is incompatible with Pair style (../kspace.cpp:197)
+ERROR: KSpace style is incompatible with Pair style (../kspace.cpp:199)
