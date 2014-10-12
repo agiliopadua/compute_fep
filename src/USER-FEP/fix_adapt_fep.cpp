@@ -171,6 +171,11 @@ FixAdaptFEP::FixAdaptFEP(LAMMPS *lmp, int narg, char **arg) :
     if (adapt[m].which == PAIR)
       memory->create(adapt[m].array_orig,n+1,n+1,"adapt:array_orig");
 
+  // when adapting charge and using kspace, 
+  // need to recompute additional params in kspace->setup()
+
+  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
+
   id_fix_diam = id_fix_chg = NULL;
 }
 
@@ -188,8 +193,7 @@ FixAdaptFEP::~FixAdaptFEP()
   }
   delete [] adapt;
 
-  // this is tricky since other fixes or computes may need it set
-  // if (chgflag && force->kspace) force->kspace->qsum_update_flag = 0;
+  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 0;
 
   // check nfix in case all fixes have already been deleted
 
@@ -367,11 +371,6 @@ void FixAdaptFEP::init()
     }
   }
 
-  // when adapting charge and using kspace, 
-  // need to recompute additional params in kspace->setup()
-
-  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
-  
   // fixes that store initial per-atom values
   
   if (id_fix_diam) {

@@ -180,9 +180,6 @@ ComputeFEP::~ComputeFEP()
   delete [] perturb;
 
   deallocate_storage();
-
-  // this is tricky since other fixes or computes may need it set
-  // if (chgflag && force->kspace) force->kspace->qsum_update_flag = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -194,8 +191,6 @@ void ComputeFEP::init()
   if (!fepinitflag)    // avoid init to run entirely when called by write_data
       fepinitflag = 1;
   else return;
-
-  // when using kspace, we need to recompute some additional parameters in kspace->setup()
 
   // setup and error checks
 
@@ -250,11 +245,6 @@ void ComputeFEP::init()
       error->all(FLERR,"Compute fep tail when pair style does not "
                  "compute tail corrections");
   }
-
-  // when perturbing charge and using kspace, 
-  // need to recompute additional params in kspace->setup()
-
-  if (chgflag && force->kspace) force->kspace->qsum_update_flag = 1;
 
   // detect if package gpu is present
 
@@ -422,10 +412,15 @@ void ComputeFEP::perturb_params()
 
   if (pairflag) force->pair->reinit();
 
-  // re-setup KSpace if it exists and adapting charges
-  // since charges have changed
+  // when perturbing charge and using kspace, 
+  // need to recompute additional params in kspace->setup()
+  // first backup the state of kspace->qsum_update_flag
 
-  if (chgflag && force->kspace) force->kspace->setup();
+  if (chgflag && force->kspace) {
+    sys_qsum_update_flag = force->kspace->qsum_update_flag;
+    force->kspace->qsum_update_flag = 1;
+    force->kspace->setup();
+  }
 }
 
 
@@ -466,7 +461,11 @@ void ComputeFEP::restore_params()
   }
 
   if (pairflag) force->pair->reinit();
-  if (chgflag && force->kspace) force->kspace->setup();
+  if (chgflag && force->kspace) {
+    force->kspace->setup();
+    // restore kspace->qsum_update_flag to original state
+    force->kspace->qsum_update_flag = sys_qsum_update_flag; 
+  }
 }
 
 
