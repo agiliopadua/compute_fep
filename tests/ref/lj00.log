@@ -1,5 +1,4 @@
 LAMMPS (9 Oct 2014)
-WARNING: OMP_NUM_THREADS environment is not set. (../comm.cpp:88)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
   1 by 1 by 1 MPI processor grid
@@ -42,4 +41,4 @@ Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press
      240   -592.21561   -1216.3348    624.11923     130.3616    10220.785   -11567.481    484.67377     -356.935 
      270   -684.37957   -1272.9189    588.53931    153.77436    10137.202   -11563.895    457.04338   -473.89362 
      300   -772.23423   -1357.7977    585.56345    162.90922    10041.194   -11561.901    454.73241   -886.26954 
-Loop time of 0.997291 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms
+Loop time of 1.02321 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms

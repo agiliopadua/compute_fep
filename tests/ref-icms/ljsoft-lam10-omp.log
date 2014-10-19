@@ -1,4 +1,0 @@
-LAMMPS (30 Sep 2014-ICMS)
-WARNING: OMP_NUM_THREADS environment is not set. (../comm.cpp:88)
-  using 1 OpenMP thread(s) per MPI task
-ERROR: Expected integer parameter in input script or data file (../fix_omp.cpp:83)
