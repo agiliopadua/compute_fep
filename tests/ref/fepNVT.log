@@ -1,4 +1,4 @@
-LAMMPS (9 Oct 2014)
+LAMMPS (30 Oct 2014)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-9.36391 -9.36391 -9.36391) to (9.36391 9.36391 9.36391)
   1 by 1 by 1 MPI processor grid
@@ -38,7 +38,7 @@ FEP settings ...
 Memory usage per processor = 7.24501 Mbytes
 Step TotEng PotEng E_vdwl E_coul E_long Temp lambda sig13 q1 
        0   -2010.0137   -2385.2237    434.96614    8806.8609   -11627.051    291.37777            0         2.78            0 
-WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:291)
+WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:294)
       30   -2008.6325   -2368.8191    451.17866    8804.1775   -11624.175    279.71093          0.1        2.835          0.1 
       60   -2004.0973   -2384.7106    453.65579    8790.0298   -11628.396    295.57379          0.2         2.89          0.2 
       90   -2002.2978   -2404.4362    457.51408    8766.7511   -11628.701    312.28956          0.3        2.945          0.3 
@@ -49,4 +49,4 @@ WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:291)
      240   -2008.0633   -2424.2917    406.09211    8820.6141   -11650.998    323.23154          0.8         3.22          0.8 
      270   -2011.7804   -2442.8833    431.39367    8784.5437   -11658.821    334.78255          0.9        3.275          0.9 
      300   -2021.8243    -2438.471    469.91794    8753.9027   -11662.292    323.55631            1         3.33            1 
-Loop time of 3.59664 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms
+Loop time of 3.52236 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms

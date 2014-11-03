@@ -1,3 +1,3 @@
-LAMMPS (9 Oct 2014)
+LAMMPS (30 Oct 2014)
   using 1 OpenMP thread(s) per MPI task
 ERROR: Expected integer parameter in input script or data file (../fix_omp.cpp:82)
