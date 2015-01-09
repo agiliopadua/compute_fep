@@ -1,4 +1,4 @@
-LAMMPS (30 Oct 2014)
+LAMMPS (9 Dec 2014)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-9.36391 -9.36391 -9.36391) to (9.36391 9.36391 9.36391)
   1 by 1 by 1 MPI processor grid
@@ -49,4 +49,4 @@ WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:294)
      240   -2008.0633   -2424.2917    406.09211    8820.6141   -11650.998    323.23154          0.8         3.22          0.8 
      270   -2011.7804   -2442.8833    431.39367    8784.5437   -11658.821    334.78255          0.9        3.275          0.9 
      300   -2021.8243    -2438.471    469.91794    8753.9027   -11662.292    323.55631            1         3.33            1 
-Loop time of 3.52236 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms
+Loop time of 3.62121 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms

@@ -1,4 +1,4 @@
-LAMMPS (30 Oct 2014)
+LAMMPS (9 Dec 2014)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
   1 by 1 by 1 MPI processor grid
@@ -21,4 +21,25 @@ LAMMPS (30 Oct 2014)
   0 = # of size 4 clusters
   216 = # of frozen angles
 PPPM initialization ...
-ERROR: KSpace style is incompatible with Pair style (../kspace.cpp:199)
+  extracting TIP4P info from pair style
+  G vector (1/distance) = 0.283959
+  grid = 15 15 15
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0120694
+  estimated relative force accuracy = 3.63466e-05
+  using double precision FFTs
+  3d grid and FFT values/proc = 10648 3375
+Memory usage per processor = 7.80291 Mbytes
+Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press 
+       0     488.1557   -91.313779    579.46947   -125.18126     18826.16   -18792.292          450    5169.2313 
+      30    262.00017   -657.47775    919.47792   -134.12213    18354.871   -18878.226    714.04117   -2697.8866 
+      60    161.21082   -667.38811    828.59893   -110.64123    18329.562   -18886.309    643.46706   -2042.7611 
+      90    49.844531     -755.887    805.73154   -60.240499    18189.433    -18885.08    625.70887   -1670.7638 
+     120     -67.9714   -807.70916    739.73776    11.119335    18068.372   -18887.201    574.45993   -528.60448 
+     150   -176.24889   -893.03346    716.78457    34.872234    17965.809   -18893.715    556.63512   -406.20907 
+     180   -281.63325   -940.19265     658.5594    74.543131    17866.303   -18881.038    511.41905   -24.287629 
+     210   -381.49348   -1031.6286    650.13513    66.292666    17802.666   -18900.587      504.877   -627.80103 
+     240   -478.24029   -1091.7123    613.47203    84.864125    17717.161   -18893.737    476.40545   -759.89058 
+     270   -564.22981   -1148.3428    584.11294    108.58204    17635.937   -18892.862    453.60599   -755.72273 
+     300   -644.45086   -1196.9765    552.52563     89.88431    17611.023   -18897.883    429.07615   -1354.5028 
+Loop time of 1.4988 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms

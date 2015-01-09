@@ -16,7 +16,7 @@ pair_style hybrid/overlay lj/cut/soft 1 0.5 10.0 &
                           tip4p/long/soft 2 3 1 1 0.15 1 10.0 10.0 &
                           lj/cut/tip4p/long 2 3 1 1 0.15 10.0 10.0
 pair_modify tail yes
-kspace_style pppm 1.0e-4
+kspace_style pppm/tip4p 1.0e-4
 
 pair_coeff    1    1  lj/cut/soft    0.0028   2.7800  1.0 # Ne Ne
 pair_coeff    1    2  lj/cut/soft    0.0212   2.9660  1.0 # Ne Ow

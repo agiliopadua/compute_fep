@@ -1,6 +1,6 @@
 # created by fftool
 
-package omp *
+package omp 0
 
 units real
 boundary p p p

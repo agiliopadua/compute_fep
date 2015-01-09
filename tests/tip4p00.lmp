@@ -14,7 +14,7 @@ read_data data.tip4p.lmp
 
 pair_style hybrid lj/cut/tip4p/long 2 3 1 1 0.15 10.0 10.0
 pair_modify tail yes
-kspace_style pppm 1.0e-4
+kspace_style pppm/tip4p 1.0e-4
 
 pair_coeff    1    1  lj/cut/tip4p/long    0.0000   1.0000  # Ne Ne
 pair_coeff    1    2  lj/cut/tip4p/long    0.0000   1.0000  # Ne Ow
