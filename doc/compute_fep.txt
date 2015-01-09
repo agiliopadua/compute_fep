@@ -136,9 +136,15 @@ the meaning of these parameters:
 "lj/cut"_pair_lj.html: epsilon,sigma: type pairs:
 "lj/cut/coul/cut"_pair_lj.html: epsilon,sigma: type pairs:
 "lj/cut/coul/long"_pair_lj.html: epsilon,sigma: type pairs:
-"lj/soft/coul/soft"_pair_lj_soft_coul_soft.html: epsilon,sigma,lambda: type pairs:
-"lj/soft"_pair_lj_soft_coul_soft.html: epsilon,sigma,lambda: type pairs:
-"coul/soft"_pair_lj_soft_coul_soft.html: lambda: type pairs:
+"lj/cut/soft"_pair_lj_soft.html: epsilon,sigma,lambda: type pairs:
+"coul/cut/soft"_pair_lj_soft.html: lambda: type pairs:
+"coul/long/soft"_pair_lj_soft.html: lambda: type pairs:
+"lj/cut/coul/cut/soft"_pair_lj_soft.html: epsilon,sigma,lambda: type pairs:
+"lj/cut/coul/long/soft"_pair_lj_soft.html: epsilon,sigma,lambda: type
+pairs:
+"lj/cut/tip4p/long/soft"_pair_lj_soft.html: epsilon,sigma,lambda: type
+pairs:
+"lj/charmm/coul/long/soft"_pair_lj_soft.html: epsilon,sigma,lambda: type pairs:
 "born"_pair_born.html: a,b,c: type pairs:
 "buck"_pair_buck.html: a,c : type pairs :tb(c=3,s=:)
 
