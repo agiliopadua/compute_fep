@@ -1,4 +1,4 @@
-LAMMPS (9 Dec 2014)
+LAMMPS (20 Jan 2015)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
   1 by 1 by 1 MPI processor grid
@@ -41,4 +41,4 @@ Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press
      240    -602.3514   -1260.7108     658.3594    148.68355    10161.373   -11570.767    511.26374   -540.32188 
      270   -700.90737   -1323.2046     622.2972    177.63685    10067.253   -11568.094    483.25883   -374.43985 
      300   -798.24603   -1408.5441    610.29803    209.70653    9943.8316   -11562.082     473.9406   -297.20736 
-Loop time of 1.07641 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms
+Loop time of 1.08703 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms

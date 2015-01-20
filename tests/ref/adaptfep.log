@@ -1,4 +1,4 @@
-LAMMPS (9 Dec 2014)
+LAMMPS (20 Jan 2015)
   using 1 OpenMP thread(s) per MPI task
   orthogonal box = (-9.36391 -9.36391 -9.36391) to (9.36391 9.36391 9.36391)
   1 by 1 by 1 MPI processor grid
@@ -33,7 +33,7 @@ FEP settings ...
   lj/cut/coul/long epsilon 3-3 3-3
 Memory usage per processor = 6.49501 Mbytes
 Step qNa epsOO PotEng E_vdwl E_coul E_long ecoul_to cFEP[1] 
-WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:294)
+WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:293)
        0       0.0000       0.1554   -2384.4632     435.7262    8806.8609  -11627.0508   -2820.1899     -27.0211 
        1       0.1000       0.1454   -2411.4843     407.7508    8808.0854  -11627.3209   -2819.2355     -27.5245 
        2       0.2000       0.1354   -2439.0088     379.7753    8809.3098  -11628.0944   -2818.7846     -28.0278 
@@ -45,7 +45,7 @@ WARNING: System is not charge neutral, net charge = 0.1 (../kspace.cpp:294)
        8       0.8000       0.0754   -2614.7262     211.9226    8816.6566  -11643.3059   -2826.6493     -31.0480 
        9       0.9000       0.0654   -2645.7742     183.9471    8817.8811  -11647.6029   -2829.7218     -31.5513 
       10       1.0000       0.0554   -2677.3255     155.9717    8819.1055  -11652.4032   -2833.2977     -32.0547 
-Loop time of 0.198795 on 1 procs (1 MPI x 1 OpenMP) for 10 steps with 649 atoms
+Loop time of 0.184987 on 1 procs (1 MPI x 1 OpenMP) for 10 steps with 649 atoms
 PPPM initialization ...
   G vector (1/distance) = 0.266541
   grid = 10 10 10
