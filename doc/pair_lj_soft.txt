@@ -24,38 +24,38 @@ style = {lj/cut/soft} or {lj/cut/coul/cut/soft} or
 {lj/cut/coul/long/soft} or {lj/cut/tip4p/long/soft} or {lj/charmm/coul/long/soft} or {coul/cut/soft} or {coul/long/soft} or {tip4p/long/soft}
 args = list of arguments for a particular style :ul
   {lj/cut/soft} args = n alpha_lj cutoff
-    n, alpha_LJ = parameters of soft-core potential
+    n, alpha_LJ = parameters of core-softed potential
     cutoff = global cutoff for Lennard-Jones interactions (distance units)
   {lj/cut/coul/cut/soft} args = n alpha_LJ alpha_C cutoff (cutoff2)
-    n, alpha_LJ, alpha_C = parameters of soft-core potential
+    n, alpha_LJ, alpha_C = parameters of core-softed potential
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/cut/coul/long/soft} args = n alpha_LJ alpha_C cutoff
-    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
+    n, alpha_LJ, alpha_C = parameters of the core-softed potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/cut/tip4p/long/soft} args = otype htype btype atype qdist n alpha_LJ alpha_C cutoff (cutoff2)
     otype,htype = atom types for TIP4P O and H
     btype,atype = bond and angle types for TIP4P waters
     qdist = distance from O atom to massless charge (distance units)
-    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
+    n, alpha_LJ, alpha_C = parameters of the core-softed potential 
     cutoff = global cutoff for LJ (and Coulombic if only 1 arg) (distance units)
     cutoff2 = global cutoff for Coulombic (optional) (distance units)
   {lj/charmm/coul/long/soft} args = n alpha_LJ alpha_C inner outer (cutoff)
-    n, alpha_LJ, alpha_C = parameters of the soft-core potential 
+    n, alpha_LJ, alpha_C = parameters of the core-softed potential 
     inner, outer = global switching cutoffs for LJ (and Coulombic if only 5 args)
     cutoff = global cutoff for Coulombic (optional, outer is Coulombic cutoff if only 5 args)   
   {coul/cut/soft} args = n alpha_C cutoff
-    n, alpha_C = parameters of the soft-core potential 
+    n, alpha_C = parameters of the core-softed potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
   {coul/long/soft} args = n alpha_C cutoff
-    n, alpha_C = parameters of the soft-core potential 
+    n, alpha_C = parameters of the core-softed potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
   {tip4p/long/soft} args = otype htype btype atype qdist n alpha_C cutoff
     otype,htype = atom types for TIP4P O and H
     btype,atype = bond and angle types for TIP4P waters
     qdist = distance from O atom to massless charge (distance units)
-    n, alpha_C = parameters of the soft-core potential 
+    n, alpha_C = parameters of the core-softed potential 
     cutoff = global cutoff for Coulomb interactions (distance units)
 :pre
 
@@ -114,11 +114,11 @@ the charges on the 2 atoms, and epsilon is the dielectric constant
 which can be set by the "dielectric"_dielectric.html command.
 
 The coefficient lambda is an activation parameter. When lambda = 1 the
-pair potentiel is identical to a Lennard-Jones term plus a Coulomb
-term. When lambda = 0 the pair interactions are deactivated. The
-transition between these two extrema is smoothed by a repulsive soft
-core in order to avoid singularities in potential energy and forces
-when sites are created or anihilated and can overlap
+pair potentiel is identical to a Lennard-Jones term or a Coulomb term
+or a combination of both. When lambda = 0 the interactions are
+deactivated. The transition between these two extrema is smoothed by a
+soft repulsive core in order to avoid singularities in potential
+energy and forces when sites are created or anihilated and can overlap
 "(Beutler)"_#Beutler.
 
 The paratemers n, alpha_LJ and alpha_C are set in the
@@ -126,7 +126,7 @@ The paratemers n, alpha_LJ and alpha_C are set in the
 choices for the exponent are n = 2 or n = 1. For the remaining
 coefficients alpha_LJ = 0.5 and alpha_C = 10 Angstrom^2 are
 appropriate choices. Plots of the LJ and Coulomb terms are shown
-below, for lambda ranging from 1 ro 0 every 0.1. 
+below, for lambda ranging from 1 to 0 every 0.1. 
 
 :c,image(JPG/lj_soft.jpg),image(JPG/coul_soft.jpg)
 
@@ -153,19 +153,19 @@ since it has no Coulombic terms. For the {coul/cut/soft} and
 {coul/long/soft} only lambda and the optional cutoff2 are to be
 specified.
 
-Style {lj/cut/tip4p/long/soft} implements a soft-core version of the
+Style {lj/cut/tip4p/long/soft} implements a core-softed version of the
 TIP4P water model. The usage of this pair style is documented in the
-"pair_lj"_pair_lj.html styles. The soft-core version introduces the
+"pair_lj"_pair_lj.html styles. The core-softed version introduces the
 lambda parameter to the list of arguments, after epsilon and sigma in
 the "pair_coeff"_pair_coeff.html command. The paratemers n, alpha_LJ
 and alpha_C are set in the "pair_style"_pair_style.html command,
 before the cutoffs.
 
-Style {lj/charmm/coul/long/soft} implements a soft-core version of the
+Style {lj/charmm/coul/long/soft} implements a core-softed version of the
 CHARMM version of LJ interactions with an additional switching
 function S(r) that ramps the energy and force smoothly to zero between
 an inner and outer cutoff. The usage of this pair style is documented
-in the "pair_charmm"_pair_charmm.html styles. The soft-core version
+in the "pair_charmm"_pair_charmm.html styles. The core-softed version
 introduces the lambda parameter to the list of arguments, after
 epsilon and sigma in the "pair_coeff"_pair_coeff.html command (and
 before the optional eps14 and sigma14). The paratemers n,
@@ -181,6 +181,19 @@ overlapping each other. In this case, if lambda = 1, a singularity may
 occur.  These substyles are suitable to represent charges embedded in
 the Lennard-Jones radius of another site (for example hydrogen atoms
 in several water models).
+
+IMPORTANT NOTES: When using the core-softed Coulomb potentials with
+long-range solvers ({coul/long/soft}, {lj/cut/coul/long/soft}, etc.)
+in a free energy calculation in which sites holding electrostatic
+charges are being created or anihilated (using
+"fix_adapt/fep"_fix_adapt_fep.html and "compute_fep"_compute_fep.html)
+it is important to adapt both the lambda activation parameter (from 0
+to 1, or the reverse) and the value of the charge (from 0 to its final
+value, or the reverse). This ensures that long-range electrostatic
+terms (kspace) are correct. It is not necessary to use core-softed
+Coulomb potentials if the van der Waals site is present during the
+free-energy route, thus avoiding overlap of the charges. Examples are
+provided in the LAMMPS source directory tree, under examples/USER/fep.
 
 
 :line
@@ -208,9 +221,11 @@ to be specified in an input script that reads a restart file.
 
 [Restrictions:]
 
-To avoid division by zero do not set sigma = 0. When sites do not
-interact though the Lennard-Jones term use epsilon = 0 and sigma = 1
-for example, or else use the {coul/long/soft} or similar substyle.
+To avoid division by zero do not set sigma = 0: instread use the
+lambda parameter to activate/deactivate interactions, or use epsilon =
+0 and sigma = 1. Alternatively, when sites do not interact though the
+Lennard-Jones term the {coul/long/soft} or similar substyle can be
+used via the "pair_style hybrid/overlay"_pair_hybrid.html command.
 
 
 [Related commands:]
