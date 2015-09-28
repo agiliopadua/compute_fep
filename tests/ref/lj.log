@@ -1,5 +1,4 @@
-LAMMPS (20 Jan 2015)
-  using 1 OpenMP thread(s) per MPI task
+LAMMPS (25 Sep 2015)
   orthogonal box = (-11.356 -11.356 -11.356) to (11.356 11.356 11.356)
   1 by 1 by 1 MPI processor grid
   reading atoms ...
@@ -28,6 +27,13 @@ PPPM initialization ...
   estimated relative force accuracy = 6.51006e-05
   using double precision FFTs
   3d grid and FFT values/proc = 6859 1728
+Neighbor list info ...
+  1 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 12
+  ghost atom cutoff = 12
+  binsize = 6 -> bins = 4 4 4
 Memory usage per processor = 7.23959 Mbytes
 Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press 
        0    467.26484   -112.20463    579.46947   -117.98409    11459.985   -11454.205          450   -1403.7349 
@@ -41,4 +47,7 @@ Step TotEng PotEng KinEng E_vdwl E_coul E_long Temp Press
      240   -609.45928   -1267.2291    657.76985    141.29689     10162.18   -11570.706    510.80591   -581.49168 
      270   -708.15865   -1331.6158     623.4571    171.30171    10065.194   -11568.111    484.15958   -417.86299 
      300   -805.69836   -1417.2616    611.56325    203.11722    9941.6518   -11562.031    474.92314     -333.963 
-Loop time of 1.00392 on 1 procs (1 MPI x 1 OpenMP) for 300 steps with 649 atoms
+Loop time of 1.07631 on 1 procs for 300 steps with 649 atoms
+
+98.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+Total wall time: 0:00:01
