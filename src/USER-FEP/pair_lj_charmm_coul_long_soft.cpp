@@ -16,23 +16,22 @@
    Soft-core version: Agilio Padua (Univ Blaise Pascal & CNRS)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "pair_lj_charmm_coul_long_soft.h"
+#include <mpi.h>
+#include <cmath>
+#include <cstring>
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
 #include "kspace.h"
 #include "update.h"
-#include "integrate.h"
 #include "respa.h"
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
+#include "utils.h"
 
 using namespace LAMMPS_NS;
 
@@ -92,8 +91,7 @@ void PairLJCharmmCoulLongSoft::compute(int eflag, int vflag)
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = ecoul = 0.0;
-  if (eflag || vflag) ev_setup(eflag,vflag);
-  else evflag = vflag_fdotr = 0;
+  ev_init(eflag,vflag);
 
   double **x = atom->x;
   double **f = atom->f;
@@ -226,10 +224,10 @@ void PairLJCharmmCoulLongSoft::compute_inner()
   int newton_pair = force->newton_pair;
   double qqrd2e = force->qqrd2e;
 
-  inum = listinner->inum;
-  ilist = listinner->ilist;
-  numneigh = listinner->numneigh;
-  firstneigh = listinner->firstneigh;
+  inum = list->inum_inner;
+  ilist = list->ilist_inner;
+  numneigh = list->numneigh_inner;
+  firstneigh = list->firstneigh_inner;
 
   double cut_out_on = cut_respa[0];
   double cut_out_off = cut_respa[1];
@@ -315,10 +313,10 @@ void PairLJCharmmCoulLongSoft::compute_middle()
   int newton_pair = force->newton_pair;
   double qqrd2e = force->qqrd2e;
 
-  inum = listmiddle->inum;
-  ilist = listmiddle->ilist;
-  numneigh = listmiddle->numneigh;
-  firstneigh = listmiddle->firstneigh;
+  inum = list->inum_middle;
+  ilist = list->ilist_middle;
+  numneigh = list->numneigh_middle;
+  firstneigh = list->firstneigh_middle;
 
   double cut_in_off = cut_respa[0];
   double cut_in_on = cut_respa[1];
@@ -415,8 +413,7 @@ void PairLJCharmmCoulLongSoft::compute_outer(int eflag, int vflag)
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = ecoul = 0.0;
-  if (eflag || vflag) ev_setup(eflag,vflag);
-  else evflag = 0;
+  ev_init(eflag,vflag);
 
   double **x = atom->x;
   double **f = atom->f;
@@ -428,10 +425,10 @@ void PairLJCharmmCoulLongSoft::compute_outer(int eflag, int vflag)
   int newton_pair = force->newton_pair;
   double qqrd2e = force->qqrd2e;
 
-  inum = listouter->inum;
-  ilist = listouter->ilist;
-  numneigh = listouter->numneigh;
-  firstneigh = listouter->firstneigh;
+  inum = list->inum;
+  ilist = list->ilist;
+  numneigh = list->numneigh;
+  firstneigh = list->firstneigh;
 
   double cut_in_off = cut_respa[2];
   double cut_in_on = cut_respa[3];
@@ -651,8 +648,8 @@ void PairLJCharmmCoulLongSoft::coeff(int narg, char **arg)
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
-  force->bounds(arg[0],atom->ntypes,ilo,ihi);
-  force->bounds(arg[1],atom->ntypes,jlo,jhi);
+  force->bounds(FLERR,arg[0],atom->ntypes,ilo,ihi);
+  force->bounds(FLERR,arg[1],atom->ntypes,jlo,jhi);
 
   double epsilon_one = force->numeric(FLERR,arg[2]);
   double sigma_one = force->numeric(FLERR,arg[3]);
@@ -759,19 +756,6 @@ void PairLJCharmmCoulLongSoft::init_style()
 }
 
 /* ----------------------------------------------------------------------
-   neighbor callback to inform pair style of neighbor list to use
-   regular or rRESPA
-------------------------------------------------------------------------- */
-
-void PairLJCharmmCoulLongSoft::init_list(int id, NeighList *ptr)
-{
-  if (id == 0) list = ptr;
-  else if (id == 1) listinner = ptr;
-  else if (id == 2) listmiddle = ptr;
-  else if (id == 3) listouter = ptr;
-}
-
-/* ----------------------------------------------------------------------
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
@@ -853,15 +837,15 @@ void PairLJCharmmCoulLongSoft::read_restart(FILE *fp)
   int me = comm->me;
   for (i = 1; i <= atom->ntypes; i++)
     for (j = i; j <= atom->ntypes; j++) {
-      if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
+      if (me == 0) utils::sfread(FLERR,&setflag[i][j],sizeof(int),1,fp,NULL,error);
       MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
       if (setflag[i][j]) {
         if (me == 0) {
-          fread(&epsilon[i][j],sizeof(double),1,fp);
-          fread(&sigma[i][j],sizeof(double),1,fp);
-          fread(&lambda[i][j],sizeof(double),1,fp);
-          fread(&eps14[i][j],sizeof(double),1,fp);
-          fread(&sigma14[i][j],sizeof(double),1,fp);
+          utils::sfread(FLERR,&epsilon[i][j],sizeof(double),1,fp,NULL,error);
+          utils::sfread(FLERR,&sigma[i][j],sizeof(double),1,fp,NULL,error);
+          utils::sfread(FLERR,&lambda[i][j],sizeof(double),1,fp,NULL,error);
+          utils::sfread(FLERR,&eps14[i][j],sizeof(double),1,fp,NULL,error);
+          utils::sfread(FLERR,&sigma14[i][j],sizeof(double),1,fp,NULL,error);
         }
         MPI_Bcast(&epsilon[i][j],1,MPI_DOUBLE,0,world);
         MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
@@ -896,15 +880,15 @@ void PairLJCharmmCoulLongSoft::write_restart_settings(FILE *fp)
 void PairLJCharmmCoulLongSoft::read_restart_settings(FILE *fp)
 {
   if (comm->me == 0) {
-    fread(&nlambda,sizeof(double),1,fp);
-    fread(&alphalj,sizeof(double),1,fp);
-    fread(&alphac,sizeof(double),1,fp);
+    utils::sfread(FLERR,&nlambda,sizeof(double),1,fp,NULL,error);
+    utils::sfread(FLERR,&alphalj,sizeof(double),1,fp,NULL,error);
+    utils::sfread(FLERR,&alphac,sizeof(double),1,fp,NULL,error);
 
-    fread(&cut_lj_inner,sizeof(double),1,fp);
-    fread(&cut_lj,sizeof(double),1,fp);
-    fread(&cut_coul,sizeof(double),1,fp);
-    fread(&offset_flag,sizeof(int),1,fp);
-    fread(&mix_flag,sizeof(int),1,fp);
+    utils::sfread(FLERR,&cut_lj_inner,sizeof(double),1,fp,NULL,error);
+    utils::sfread(FLERR,&cut_lj,sizeof(double),1,fp,NULL,error);
+    utils::sfread(FLERR,&cut_coul,sizeof(double),1,fp,NULL,error);
+    utils::sfread(FLERR,&offset_flag,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&mix_flag,sizeof(int),1,fp,NULL,error);
   }
 
   MPI_Bcast(&nlambda,1,MPI_DOUBLE,0,world);
@@ -994,7 +978,7 @@ double PairLJCharmmCoulLongSoft::single(int i, int j, int itype, int jtype,
 
   if (rsq < cut_ljsq) {
     philj = lj1[itype][jtype] * 4.0 * epsilon[itype][jtype] *
-      (1.0/(denlj*denlj) - 1.0/denlj) - offset[itype][jtype];
+      (1.0/(denlj*denlj) - 1.0/denlj);
     if (rsq > cut_lj_innersq) {
       switch1 = (cut_ljsq-rsq) * (cut_ljsq-rsq) *
         (cut_ljsq + 2.0*rsq - 3.0*cut_lj_innersq) / denom_lj;

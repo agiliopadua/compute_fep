@@ -17,25 +17,21 @@
    Soft-core version: Agilio Padua (Univ Blaise Pascal & CNRS)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "pair_tip4p_long_soft.h"
+#include <mpi.h>
+#include <cmath>
+#include <cstring>
 #include "angle.h"
 #include "atom.h"
 #include "bond.h"
 #include "comm.h"
 #include "domain.h"
 #include "force.h"
-#include "kspace.h"
-#include "update.h"
-#include "respa.h"
 #include "neighbor.h"
 #include "neigh_list.h"
-#include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
+#include "utils.h"
 
 using namespace LAMMPS_NS;
 
@@ -85,14 +81,13 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
   double factor_coul;
   double grij,expm2,prefactor,t,erfc;
   double denc;
-  double fO[3],fH[3],fd[3],v[6],xH1[3],xH2[3];
-  double *x1,*x2;
+  double fO[3],fH[3],fd[3],v[6];
+  double *x1,*x2,*xH1,*xH2;
   int *ilist,*jlist,*numneigh,**firstneigh;
   double rsq;
 
   ecoul = 0.0;
-  if (eflag || vflag) ev_setup(eflag,vflag);
-  else evflag = vflag_fdotr = 0;
+  ev_init(eflag,vflag);
 
   // reallocate hneigh & newsite if necessary
   // initialize hneigh[0] to -1 on steps when reneighboring occurred
@@ -140,14 +135,20 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
 
     if (itype == typeO) {
       if (hneigh[i][0] < 0) {
-        hneigh[i][0] = iH1 = atom->map(atom->tag[i] + 1);
-        hneigh[i][1] = iH2 = atom->map(atom->tag[i] + 2);
-        hneigh[i][2] = 1;
+        iH1 = atom->map(atom->tag[i] + 1);
+        iH2 = atom->map(atom->tag[i] + 2);
         if (iH1 == -1 || iH2 == -1)
           error->one(FLERR,"TIP4P hydrogen is missing");
         if (atom->type[iH1] != typeH || atom->type[iH2] != typeH)
           error->one(FLERR,"TIP4P hydrogen has incorrect atom type");
+        // set iH1,iH2 to closest image to O
+        iH1 = domain->closest_image(i,iH1);
+        iH2 = domain->closest_image(i,iH2);
         compute_newsite(x[i],x[iH1],x[iH2],newsite[i]);
+        hneigh[i][0] = iH1;
+        hneigh[i][1] = iH2;
+        hneigh[i][2] = 1;
+
       } else {
         iH1 = hneigh[i][0];
         iH2 = hneigh[i][1];
@@ -184,14 +185,20 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
 
           if (jtype == typeO) {
             if (hneigh[j][0] < 0) {
-              hneigh[j][0] = jH1 = atom->map(atom->tag[j] + 1);
-              hneigh[j][1] = jH2 = atom->map(atom->tag[j] + 2);
-              hneigh[j][2] = 1;
+              jH1 = atom->map(atom->tag[j] + 1);
+              jH2 = atom->map(atom->tag[j] + 2);
               if (jH1 == -1 || jH2 == -1)
                 error->one(FLERR,"TIP4P hydrogen is missing");
               if (atom->type[jH1] != typeH || atom->type[jH2] != typeH)
                 error->one(FLERR,"TIP4P hydrogen has incorrect atom type");
+              // set jH1,jH2 to closest image to O
+              jH1 = domain->closest_image(j,jH1);
+              jH2 = domain->closest_image(j,jH2);
               compute_newsite(x[j],x[jH1],x[jH2],newsite[j]);
+              hneigh[j][0] = jH1;
+              hneigh[j][1] = jH2;
+              hneigh[j][2] = 1;
+
             } else {
               jH1 = hneigh[j][0];
               jH2 = hneigh[j][1];
@@ -282,9 +289,8 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
             f[iH2][2] += fH[2];
 
             if (vflag) {
-              domain->closest_image(x[i],x[iH1],xH1);
-              domain->closest_image(x[i],x[iH2],xH2);
-
+              xH1 = x[iH1];
+              xH2 = x[iH2];
               v[0] = x[i][0]*fO[0] + xH1[0]*fH[0] + xH2[0]*fH[0];
               v[1] = x[i][1]*fO[1] + xH1[1]*fH[1] + xH2[1]*fH[1];
               v[2] = x[i][2]*fO[2] + xH1[2]*fH[2] + xH2[2]*fH[2];
@@ -340,9 +346,8 @@ void PairTIP4PLongSoft::compute(int eflag, int vflag)
             f[jH2][2] += fH[2];
 
             if (vflag) {
-              domain->closest_image(x[j],x[jH1],xH1);
-              domain->closest_image(x[j],x[jH2],xH2);
-
+              xH1 = x[jH1];
+              xH2 = x[jH2];
               v[0] += x[j][0]*fO[0] + xH1[0]*fH[0] + xH2[0]*fH[0];
               v[1] += x[j][1]*fO[1] + xH1[1]*fH[1] + xH2[1]*fH[1];
               v[2] += x[j][2]*fO[2] + xH1[2]*fH[2] + xH2[2]*fH[2];
@@ -449,11 +454,11 @@ void PairTIP4PLongSoft::read_restart_settings(FILE *fp)
   PairCoulLongSoft::read_restart_settings(fp);
 
   if (comm->me == 0) {
-    fread(&typeO,sizeof(int),1,fp);
-    fread(&typeH,sizeof(int),1,fp);
-    fread(&typeB,sizeof(int),1,fp);
-    fread(&typeA,sizeof(int),1,fp);
-    fread(&qdist,sizeof(double),1,fp);
+    utils::sfread(FLERR,&typeO,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&typeH,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&typeB,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&typeA,sizeof(int),1,fp,NULL,error);
+    utils::sfread(FLERR,&qdist,sizeof(double),1,fp,NULL,error);
   }
   MPI_Bcast(&typeO,1,MPI_INT,0,world);
   MPI_Bcast(&typeH,1,MPI_INT,0,world);
@@ -473,12 +478,10 @@ void PairTIP4PLongSoft::compute_newsite(double *xO, double *xH1,
   double delx1 = xH1[0] - xO[0];
   double dely1 = xH1[1] - xO[1];
   double delz1 = xH1[2] - xO[2];
-  domain->minimum_image(delx1,dely1,delz1);
 
   double delx2 = xH2[0] - xO[0];
   double dely2 = xH2[1] - xO[1];
   double delz2 = xH2[2] - xO[2];
-  domain->minimum_image(delx2,dely2,delz2);
 
   xM[0] = xO[0] + alpha * 0.5 * (delx1 + delx2);
   xM[1] = xO[1] + alpha * 0.5 * (dely1 + dely2);
